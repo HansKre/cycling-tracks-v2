@@ -57,7 +57,7 @@ const fetchActivities = async (activityType: ActivityType = ActivityType.CYCLING
 async function getActivities() {
     const data = await fetchActivities(ActivityType.CYCLING);
     let response;
-    if (data?.length > 0) {
+    if (Array.isArray(data)) {
         const activities: [GarminActivity] = <[GarminActivity]>data;
         response = <[Activity]>activities.map((a: GarminActivity) => ({
             id: a.activityId,
