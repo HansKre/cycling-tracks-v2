@@ -1,6 +1,6 @@
 # Description
 
-![alt]('./../doc/demo.gif')
+![alt](doc/demo.gif)
 
 ## Backend
 
