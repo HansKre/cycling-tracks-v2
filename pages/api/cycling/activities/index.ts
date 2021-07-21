@@ -41,9 +41,9 @@ enum ActivityType {
 /**
  * @function fetchActivities Download activities from Garmin
  */
-const fetchActivities = async (activityType: ActivityType = ActivityType.CYCLING): Promise<[GarminActivity] | string> => {
+const fetchActivities = async (activityType: ActivityType = ActivityType.CYCLING): Promise<GarminActivity[] | string> => {
     try {
-        const activities = await client.fetch(`https://connect.garmin.com/modern/proxy/activitylist-service/activities/search/activities?activityType=${activityType}&sortBy=startLocal&sortOrder=desc&limit=500&start=0&_=1615033738343`,
+        const activities = await client.fetch(config.activitiesUrl(activityType),
             options);
         return JSON.parse(activities);
     } catch (err) {
@@ -54,21 +54,21 @@ const fetchActivities = async (activityType: ActivityType = ActivityType.CYCLING
 /**
 * @function getActivities Downloads activities from Garmin and maps them to the internal Activity-Datamodel
 */
-async function getActivities(): Promise<[Activity] | string> {
+async function getActivities(): Promise<Activity[] | string> {
     const data = await fetchActivities(ActivityType.CYCLING);
     let response;
     if (Array.isArray(data)) {
-        const activities: [GarminActivity] = <[GarminActivity]>data;
-        response = <[Activity]>activities.map((a: GarminActivity) => ({
+        const activities: GarminActivity[] = <GarminActivity[]>data;
+        response = <Activity[]>activities.map((a: GarminActivity) => ({
             id: a.activityId,
             startTime: a.startTimeLocal,
             name: a.activityName,
             type: a.activityType.typeKey,
-            distance: a.distance,
+            distance: parseFloat((a.distance / 1000)?.toFixed(2)),
             duration: new Date(a.duration * 1000).toISOString().substr(11, 8),
-            elevationGain: a.elevationGain,
-            elevationLoss: a.elevationLoss,
-            averageSpeed: a.averageSpeed,
+            elevationGain: parseFloat((a.elevationGain)?.toFixed(2)),
+            elevationLoss: parseFloat((a.elevationLoss)?.toFixed(2)),
+            averageSpeed: parseFloat((a.averageSpeed * 3.612716723).toFixed(2)),
             calories: a.calories
         }));
     } else {

@@ -1,0 +1,44 @@
+fetch("https://connect.garmin.com/modern/proxy/activity-service/activity/7058808001?_=1626801326442", {
+  "headers": {
+    "accept": "application/json, text/javascript, */*; q=0.01",
+    "accept-language": "de-DE,de;q=0.9,en-US;q=0.8,en;q=0.7",
+    "nk": "NT",
+    "sec-ch-ua": "\" Not;A Brand\";v=\"99\", \"Google Chrome\";v=\"91\", \"Chromium\";v=\"91\"",
+    "sec-ch-ua-mobile": "?0",
+    "sec-fetch-dest": "empty",
+    "sec-fetch-mode": "cors",
+    "sec-fetch-site": "same-origin",
+    "x-app-ver": "4.44.3.0",
+    "x-lang": "de-DE",
+    "x-requested-with": "XMLHttpRequest",
+    "cookie": "G_ENABLED_IDPS=google; _ga=GA1.2.987071538.1611160661; notice_behavior=implied,eu; notice_preferences=0:; notice_gdpr_prefs=0:; notice_poptime=1619726400000; cmapi_gtm_bl=ga-ms-ua-ta-asp-bzi-sp-awct-cts-csm-img-flc-fls-mpm-mpr-m6d-tc-tdc; cmapi_cookie_privacy=permit 1 required; __cfruid=d7f78fb0dbeb0b2ac08ccb1659fdb941ce305ec1-1626720699; GarminUserPrefs=de-DE; utag_main=v_id:017720a64051002ef4bae0612d780207800570700083e$_sn:9$_ss:0$_st:1626726657088$ses_id:1626723857851%3Bexp-session$_pn:5%3Bexp-session; CONSENTMGR=consent:false%7Cts:1626724929444; __cflb=02DiuJLbVZHipNWxN8yYRX3u8XkAfEE59VEzC6U1ehrBE; ADRUM=s=1626799757298&r=https%3A%2F%2Fsso.garmin.com%2Fsso%2Fsignin%3Fhash%3D-723646887; GARMIN-SSO=1; GarminNoCache=true; GARMIN-SSO-GUID=5C8C08548C95AA6F3EF1A97CFCD0EA0C0868790D; GARMIN-SSO-CUST-GUID=82a11586-b698-47fb-8dc5-c5819fdbbc03; SESSIONID=d8554988-d336-4562-ae49-34bdf3381954"
+  },
+  "referrer": "https://connect.garmin.com/modern/activity/7147476023",
+  "referrerPolicy": "strict-origin-when-cross-origin",
+  "body": null,
+  "method": "GET",
+  "mode": "cors"
+});
+
+
+
+------
+
+
+curl 'https://connect.garmin.com/modern/proxy/activity-service/activity/7058808001?_=1626801326442' \
+  -H 'authority: connect.garmin.com' \
+  -H 'sec-ch-ua: " Not;A Brand";v="99", "Google Chrome";v="91", "Chromium";v="91"' \
+  -H 'sec-ch-ua-mobile: ?0' \
+  -H 'user-agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.114 Safari/537.36' \
+  -H 'nk: NT' \
+  -H 'accept: application/json, text/javascript, */*; q=0.01' \
+  -H 'x-requested-with: XMLHttpRequest' \
+  -H 'x-app-ver: 4.44.3.0' \
+  -H 'x-lang: de-DE' \
+  -H 'sec-fetch-site: same-origin' \
+  -H 'sec-fetch-mode: cors' \
+  -H 'sec-fetch-dest: empty' \
+  -H 'referer: https://connect.garmin.com/modern/activity/7147476023' \
+  -H 'accept-language: de-DE,de;q=0.9,en-US;q=0.8,en;q=0.7' \
+  -H 'cookie: G_ENABLED_IDPS=google; _ga=GA1.2.987071538.1611160661; notice_behavior=implied,eu; notice_preferences=0:; notice_gdpr_prefs=0:; notice_poptime=1619726400000; cmapi_gtm_bl=ga-ms-ua-ta-asp-bzi-sp-awct-cts-csm-img-flc-fls-mpm-mpr-m6d-tc-tdc; cmapi_cookie_privacy=permit 1 required; __cfruid=d7f78fb0dbeb0b2ac08ccb1659fdb941ce305ec1-1626720699; GarminUserPrefs=de-DE; utag_main=v_id:017720a64051002ef4bae0612d780207800570700083e$_sn:9$_ss:0$_st:1626726657088$ses_id:1626723857851%3Bexp-session$_pn:5%3Bexp-session; CONSENTMGR=consent:false%7Cts:1626724929444; __cflb=02DiuJLbVZHipNWxN8yYRX3u8XkAfEE59VEzC6U1ehrBE; ADRUM=s=1626799757298&r=https%3A%2F%2Fsso.garmin.com%2Fsso%2Fsignin%3Fhash%3D-723646887; GARMIN-SSO=1; GarminNoCache=true; GARMIN-SSO-GUID=5C8C08548C95AA6F3EF1A97CFCD0EA0C0868790D; GARMIN-SSO-CUST-GUID=82a11586-b698-47fb-8dc5-c5819fdbbc03; SESSIONID=d8554988-d336-4562-ae49-34bdf3381954' \
+  --compressed

@@ -1,5 +1,5 @@
-interface Polyline {
+interface ActivityPolyline {
     encodedPolyline: string;
 }
 
-export default Polyline;
+export default ActivityPolyline;
