@@ -1,7 +1,5 @@
 import type {NextApiRequest, NextApiResponse} from 'next';
-import GarminActivity from '../../types/incoming/garmin-activity';
 import GarminActivityDetail from '../../types/incoming/garmin-activity-details';
-import Activity from '../../types/outgoing/activity';
 import ActivityDetails from '../../types/outgoing/activity-details';
 const client = require('tunneled-got');
 const config = require('../../config')
@@ -62,7 +60,7 @@ function simplifyPolyline(data: GarminActivityDetail, response: any) {
     return response;
 }
 
-async function getSimplifiedDetails(id: string) {
+async function getSimplifiedDetails(id: string): Promise<ActivityDetails | string> {
     const data = await fetchDetails(id);
     let response;
     if (data instanceof Object) {

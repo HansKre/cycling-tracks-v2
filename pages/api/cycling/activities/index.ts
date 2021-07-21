@@ -54,7 +54,7 @@ const fetchActivities = async (activityType: ActivityType = ActivityType.CYCLING
 /**
 * @function getActivities Downloads activities from Garmin and maps them to the internal Activity-Datamodel
 */
-async function getActivities() {
+async function getActivities(): Promise<[Activity] | string> {
     const data = await fetchActivities(ActivityType.CYCLING);
     let response;
     if (Array.isArray(data)) {

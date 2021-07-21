@@ -1,3 +1,38 @@
 # Description
 
-// TODO
+## Backend
+
+### API
+
+#### Routes
+
+- <http://localhost:3000/api/cycling/activities>
+- <http://localhost:3000/api/cycling/activities/7131682282>
+- <http://localhost:3000/api/cycling/activities/polyline/7147476023>
+
+### Size comparison
+
+Comparing a cycling activity `7147476023` with ca. 37km length.
+
+| Endpoint                                                                                                                                                 | Size  |
+| -------------------------------------------------------------------------------------------------------------------------------------------------------- | ----- |
+| [garmin/polyline/7147476023](https://connect.garmin.com/modern/proxy/activity-service/activity/polyline/7147476023)                                      | 4kb   |
+| [localhost/details/7147476023](http://localhost:3000/api/cycling/activities/7147476023)                                                                  | 30kb  |
+| [garmin/details/7147476023](https://connect.garmin.com/modern/proxy/activity-service/activity/7147476023/details?maxChartSize=2000&maxPolylineSize=4000) | 785kb |
+
+## Flow
+
+1. query - <http://localhost:3000/api/cycling/activities>
+   1. persist activities in localstorage
+2. forEach:
+   1. query polyline endpoint
+      1. persist polyline in localstorage
+   2. create polyline
+   3. re-center map
+   4. add on-mouse-over tooltip
+
+## Backlog
+
+- Refactor API:
+  - helper method for fetching which expects url only
+  - harmonize usage of fetch-library (tunneled-got vs. node-fetch)
