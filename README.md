@@ -32,11 +32,14 @@ Comparing a cycling activity `7147476023` with ca. 37km length.
 
 ## Backlog
 
-- activities/1654609164
-- activities/3868142407
+- username/password auth
+- use localstorage
+- issues with
+  - activities/1654609164
+  - activities/3868142407
 - lines clickable
 - gpx download link
-- running activities
+- add choice for running activities
 - stylischer
 - Refactor API:
   - helper method for fetching which expects url only

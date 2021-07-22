@@ -7,6 +7,8 @@ import styles from './Leaflet.module.css';
 const polyUtil = require('polyline-encoded');
 import L, {LatLngBounds} from 'leaflet';
 import ProgressBar from "@ramonak/react-progress-bar";
+import Login from './Login';
+import {useRouter} from 'next/router'
 
 const randomColor = () => {
     const randomColor = Math.floor(Math.random() * 16777215).toString(16);
@@ -98,9 +100,10 @@ function Leaflet() {
     }, [])
 
     const completed = Math.round((completedCount / activities.length) * 100);
-    console.log(completedCount, activities.length, completed);
+    const router = useRouter();
     return (
         <>
+            <Login history={router} />
             <p>{`${completedCount} / ${activities.length}`}</p>
             <ProgressBar
                 completed={completed ? completed : 0}
