@@ -140,9 +140,10 @@ const login = async (username, password) => {
 };
 
 export default async function handler(req, res) {
-    console.log('login request received');
+    console.log('/api/login', req.method, req.body);
     if (req.method === 'POST') {
         const { username, password } = req.body;
+        console.log('parsed:', username, password);
         if (username && password) {
             console.log(username, password);
             let response = await login(username, password);

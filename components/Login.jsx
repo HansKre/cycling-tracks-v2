@@ -10,9 +10,6 @@ import {
     Link,
 } from "@material-ui/core";
 import styles from './Login.module.css'
-// import {BRAND_NAME} from '../constants'
-
-const BRAND_NAME = 'Cycling Tracks';
 
 class Login extends React.Component {
     constructor(props) {
@@ -27,12 +24,9 @@ class Login extends React.Component {
     }
     handleSubmit(event) {
         event.preventDefault();
-        // if (this.state.username == 'admin@littech.in' && this.state.password == 'secret') {
-        //     this.props.history.push("/home");
-        // } else {
-        //     alert('Incorrect Credntials!');
-        // }
-        this.props.history.push("/abc");
+        if (this.state.username.length > 0 && this.state.password.length > 0) {
+            this.props.onLogin(this.state.username, this.state.password);
+        }
     }
     render() {
         return (
@@ -41,7 +35,7 @@ class Login extends React.Component {
                     <Toolbar>
                         <Grid container justify="center" wrap="wrap">
                             <Grid item>
-                                <Typography variant="h6">{BRAND_NAME}</Typography>
+                                <Typography variant="h6">{this.props.title}</Typography>
                             </Grid>
                         </Grid>
                     </Toolbar>

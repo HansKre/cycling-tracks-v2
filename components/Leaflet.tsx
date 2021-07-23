@@ -8,7 +8,8 @@ const polyUtil = require('polyline-encoded');
 import L, {LatLngBounds} from 'leaflet';
 import ProgressBar from "@ramonak/react-progress-bar";
 import Login from './Login';
-import {useRouter} from 'next/router'
+import Cookie from '../pages/api/types/incoming/Cookie';
+import {postRequest} from './utils';
 
 const randomColor = () => {
     const randomColor = Math.floor(Math.random() * 16777215).toString(16);
@@ -31,6 +32,7 @@ function Leaflet() {
     const [map, setMap] = useState<Map>();
     const [activities, setActivities] = useState<Activity[] | []>([]);
     const [completedCount, setCompletedCount] = useState<number>(0);
+    const [authCookies, setAuthCookies] = useState<Cookie[]>();
 
     useEffect(() => {
         for (const activity of activities.filter(a => !blacklistedActivities.includes(a.id))) {
@@ -93,17 +95,30 @@ function Leaflet() {
     }, [activities])
 
     useEffect(() => {
-        fetch('/api/cycling/activities')
-            .then(data => data.json())
-            .then((json: [Activity]) => setActivities(json))
-            .catch(err => console.log(err))
-    }, [])
+        if (authCookies) {
+            postRequest('/api/cycling/activities', authCookies)
+                .then(data => data.json())
+                .then((json: [Activity]) => setActivities(json))
+                .catch(err => console.log(err))
+        }
+    }, [authCookies])
+
+    const handleLogin = async (username: string, password: string) => {
+        const response = await postRequest('/api/login', {username, password});
+        if (response.status === 200) {
+            const newAuthCookies: Cookie[] = await response.json();
+            console.log(newAuthCookies);
+            setAuthCookies(newAuthCookies);
+        } else {
+            alert(`Something went wrong: ${response.status} - ${response.statusText}`);
+        }
+    }
 
     const completed = Math.round((completedCount / activities.length) * 100);
-    const router = useRouter();
     return (
         <>
-            <Login history={router} />
+            {!authCookies && <Login title={'Cycling Activities'} onLogin={handleLogin} />}
+            {authCookies && <p>{JSON.stringify(authCookies?.cookies, null, 2)}</p>}
             <p>{`${completedCount} / ${activities.length}`}</p>
             <ProgressBar
                 completed={completed ? completed : 0}

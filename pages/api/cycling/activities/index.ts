@@ -6,6 +6,7 @@ const config = require('../../config')
 const {timeConverter} = require('../../utils.js');
 const simplify = require('simplify-js');
 const fs = require('fs');
+import {fetch, CookieJar, Cookie} from "node-fetch-cookies";
 
 const headers = {
     "accept": "application/json, text/javascript, */*; q=0.01",
@@ -41,21 +42,40 @@ enum ActivityType {
 /**
  * @function fetchActivities Download activities from Garmin
  */
-const fetchActivities = async (activityType: ActivityType = ActivityType.CYCLING): Promise<GarminActivity[] | string> => {
+const fetchActivities = async (cookieJar: CookieJar, activityType: ActivityType = ActivityType.CYCLING): Promise<GarminActivity[] | Response> => {
     try {
-        const activities = await client.fetch(config.activitiesUrl(activityType),
+        // const activities = await client.fetch(config.activitiesUrl(activityType),
+        // options);
+        const response = await fetch(cookieJar, config.activitiesUrl(activityType),
             options);
-        return JSON.parse(activities);
+        if (response.status === 200) {
+            const json = await response.json()
+            return json;
+        } else {
+            return handleError(response as Response);
+        }
     } catch (err) {
         return err.message;
+    }
+}
+
+type Response = {
+    status: number;
+    statusText: string;
+}
+
+const handleError = (response: Response): Response => {
+    return {
+        status: response.status,
+        statusText: response.statusText
     }
 }
 
 /**
 * @function getActivities Downloads activities from Garmin and maps them to the internal Activity-Datamodel
 */
-async function getActivities(): Promise<Activity[] | string> {
-    const data = await fetchActivities(ActivityType.CYCLING);
+async function getActivities(cookieJar: CookieJar): Promise<Activity[] | string> {
+    const data = await fetchActivities(cookieJar, ActivityType.CYCLING);
     let response;
     if (Array.isArray(data)) {
         const activities: GarminActivity[] = <GarminActivity[]>data;
@@ -78,8 +98,22 @@ async function getActivities(): Promise<Activity[] | string> {
 }
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
-    let response = await getActivities();
-    res.status(200).json(response);
+    console.log('/cycling/activities')
+    if (req.method !== 'POST') {
+        res.status(405).send('Method Not Allowed: Only POST supported.')
+        return false;
+    }
+    const authCookies = req.body;
+    if (authCookies && Array.isArray(authCookies)) {
+        const cookieJar = new CookieJar();
+        authCookies.forEach(cookie => {
+            cookieJar.addCookie(Cookie.fromObject(cookie));
+        })
+        let response = await getActivities(cookieJar);
+        res.status(200).json(response);
+    } else {
+        res.status(400).send('Bad Request: missing auth cookies.');
+    }
 }
 
 export {getActivities};
