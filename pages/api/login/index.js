@@ -72,6 +72,8 @@ const login = async (username, password) => {
     console.log('SingInService:', responseSignInService.status);
     // console.log(cookieJar.cookies);
 
+    console.log(`username=${encodeURIComponent(username)}&password=${encodeURIComponent(password)}&embed=false`);
+
     const responseLogin = await fetch(cookieJar, config.loginUrl, {
         ...options,
         "method": "POST",
