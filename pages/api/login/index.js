@@ -70,9 +70,7 @@ const login = async (username, password) => {
         ...options,
     });
     console.log('SingInService:', responseSignInService.status);
-    // console.log(cookieJar.cookies);
-
-    console.log(`username=${encodeURIComponent(username)}&password=${encodeURIComponent(password)}&embed=false`);
+    console.log(cookieJar.cookies);
 
     const responseLogin = await fetch(cookieJar, config.loginUrl, {
         ...options,
@@ -82,7 +80,8 @@ const login = async (username, password) => {
     console.log('Login:', responseLogin.status, responseLogin.statusText);
     const loginBody = await responseLogin.text();
     if (responseLogin.status !== 200) {
-        // console.log(loginBody);
+        console.log(responseLogin);
+        console.log(loginBody);
         return responseLogin.status;
     }
 
