@@ -10,6 +10,7 @@ import ProgressBar from "@ramonak/react-progress-bar";
 import Login from './Login';
 import Cookie from '../pages/api/types/incoming/Cookie';
 import {postRequest} from './utils';
+import config from '../pages/api/config'
 
 const randomColor = () => {
     const randomColor = Math.floor(Math.random() * 16777215).toString(16);
@@ -49,7 +50,7 @@ function Leaflet() {
     useEffect(() => {
         if (authCookies.length > 0) {
             for (const activity of activities.filter(a => !blacklistedActivities.includes(a.id)).filter(a => a.distance > 50 && a.distance < 65 && a.id !== 1791420271)) {
-                postRequest(`/api/cycling/activities/polyline/${activity.id}`, authCookies)
+                postRequest(config.polylineApiUrl(activity.id), authCookies)
                     .then(data => data.json())
                     .then((json: ActivityPolyline) => {
                         setCompletedCount(prevState => prevState + 1);
@@ -113,7 +114,7 @@ function Leaflet() {
 
     useEffect(() => {
         if (authCookies.length > 0) {
-            postRequest('/api/cycling/activities', authCookies)
+            postRequest(config.activitiesApiUrl, authCookies)
                 .then(data => data.json())
                 .then((json: [Activity]) => setActivities(json))
                 .catch(err => console.log(err))
@@ -121,7 +122,7 @@ function Leaflet() {
     }, [authCookies])
 
     const handleLogin = async (username: string, password: string) => {
-        const response = await postRequest('/api/login', {username, password});
+        const response = await postRequest(config.loginApiUrl, {username, password});
         if (response.status === 200) {
             const newAuthCookies: Cookie[] = await response.json();
             console.log(newAuthCookies);
