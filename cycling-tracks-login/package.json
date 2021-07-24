@@ -1,0 +1,25 @@
+{
+    "name": "cycling-tracks-login",
+    "version": "0.0.1",
+    "description": "Login Lambda for cycling-tracks-v2 application.",
+    "main": "index.js",
+    "scripts": {
+        "start": "node -r esm index.js"
+    },
+    "dependencies": {
+        "esm": "^3.2.25",
+        "node-fetch-cookies": "^2.0.3"
+    },
+    "engines": {
+        "node": "14.x"
+    },
+    "repository": {
+        "url": "https://glitch.com/edit/#!/glitch-hello-node"
+    },
+    "license": "MIT",
+    "keywords": [
+        "node",
+        "glitch",
+        "express"
+    ]
+}
