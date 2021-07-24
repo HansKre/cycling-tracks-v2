@@ -1,12 +1,16 @@
 import { fetch, CookieJar, Cookie } from "node-fetch-cookies";
 
 const express = require("express");
+const cors = require('cors');
 const app = express();
 const port = process.env.PORT || 3000;
 
 var bodyParser = require("body-parser");
 
 console.log({ fetch, CookieJar, Cookie });
+
+// Enable All CORS Requests for all routes
+app.use(cors());
 
 const config = {
     isDEBUG: process.env.NODE_ENV === "development",

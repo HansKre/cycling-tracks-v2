@@ -7,12 +7,13 @@
         "start": "node -r esm server.js"
     },
     "dependencies": {
+        "cors": "^2.8.5",
         "esm": "^3.2.25",
         "express": "^4.17.1",
         "node-fetch-cookies": "^2.0.3"
     },
     "engines": {
-        "node": "14.x"
+        "node": "16.x"
     },
     "repository": {
         "url": "https://glitch.com/edit/#!/glitch-hello-node"
