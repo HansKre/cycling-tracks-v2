@@ -32,11 +32,9 @@ Comparing a cycling activity `7147476023` with ca. 37km length.
 
 ## Backlog
 
-- username/password auth
+- username/password auth -> local storage
 - use localstorage
-- issues with
-  - activities/1654609164
-  - activities/3868142407
+- [watch](https://egghead.io/lessons/react-add-geojson-location-data-to-a-map-using-markers-and-popups-in-react-leaflet)
 - lines clickable
 - gpx download link
 - add choice for running activities
