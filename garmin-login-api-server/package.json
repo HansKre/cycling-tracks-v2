@@ -7,17 +7,12 @@
         "start": "node -r esm server.js"
     },
     "dependencies": {
-        "fastify": "^3.14.1",
-        "fastify-formbody": "^5.0.0",
-        "fastify-static": "^4.0.0",
-        "handlebars": "^4.7.7",
-        "point-of-view": "^4.14.0",
+        "esm": "^3.2.25",
         "express": "^4.17.1",
-        "node-fetch-cookies": "^2.0.3",
-        "esm": "^3.2.25"
+        "node-fetch-cookies": "^2.0.3"
     },
     "engines": {
-        "node": "12.x"
+        "node": "14.x"
     },
     "repository": {
         "url": "https://glitch.com/edit/#!/glitch-hello-node"

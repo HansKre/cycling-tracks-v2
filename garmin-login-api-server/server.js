@@ -2,7 +2,7 @@ import { fetch, CookieJar, Cookie } from "node-fetch-cookies";
 
 const express = require("express");
 const app = express();
-const port = 3000;
+const port = process.env.PORT || 3000;
 
 var bodyParser = require("body-parser");
 
@@ -193,7 +193,7 @@ const login = async (username, password) => {
     }
 };
 
-app.use(async function (req, res) {
+app.post('/api/login', async function (req, res) {
     console.log("/api/login", req.method, req.body);
     if (req.method === "POST") {
         const { username, password } = req.body;
