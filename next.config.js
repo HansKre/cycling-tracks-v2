@@ -6,4 +6,10 @@ module.exports = {
         // !! WARN !!
         ignoreBuildErrors: true,
     },
+    // allow using back-end modules (which depend on fs) in front-end
+    webpack: (config) => {
+        config.resolve.fallback = { fs: false };
+
+        return config;
+    },
 }
