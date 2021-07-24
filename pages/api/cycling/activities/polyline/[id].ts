@@ -1,11 +1,8 @@
 import type {NextApiRequest, NextApiResponse} from 'next';
 import GarminActivityPolyline from '../../../types/incoming/garmin-activity-polyline';
 import Polyline from '../../../types/outgoing/polyline';
-const client = require('tunneled-got');
 const config = require('../../../config')
-const {timeConverter} = require('../../../utils');
-const simplify = require('simplify-js');
-const fs = require('fs');
+import {fetch, CookieJar, Cookie} from "node-fetch-cookies";
 
 const headers = {
     "accept": "application/json, text/javascript, */*; q=0.01",
@@ -34,18 +31,35 @@ const options = {
 };
 
 
-const fetchPolyline = async (id: string): Promise<GarminActivityPolyline | string> => {
+const fetchPolyline = async (cookieJar: CookieJar, id: string): Promise<GarminActivityPolyline | Response> => {
     try {
-        const details = await client.fetch(config.activityPolylineUrl(id),
+        const details = await fetch(cookieJar, config.activityPolylineUrl(id),
             options);
-        return JSON.parse(details);
+        if (details.status === 200) {
+            const json = await details.json()
+            return json;
+        } else {
+            return handleError(details as Response);
+        }
     } catch (err) {
         return err.message;
     }
 }
 
-async function getPolyline(id: string): Promise<Polyline | string> {
-    const data = await fetchPolyline(id);
+type Response = {
+    status: number;
+    statusText: string;
+}
+
+const handleError = (response: Response): Response => {
+    return {
+        status: response.status,
+        statusText: response.statusText
+    }
+}
+
+async function getPolyline(cookieJar: CookieJar, id: string): Promise<Polyline | string> {
+    const data = await fetchPolyline(cookieJar, id);
     let response;
     if (data instanceof Object) {
         const polyline: GarminActivityPolyline = <GarminActivityPolyline>data;
@@ -59,9 +73,23 @@ async function getPolyline(id: string): Promise<Polyline | string> {
 }
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
+    console.log(`/cycling/activities/${req?.query?.id}`)
+    if (req.method !== 'POST') {
+        res.status(405).send('Method Not Allowed: Only POST supported.')
+        return false;
+    }
     const id: string = <string>req?.query?.id;
-    let response = await getPolyline(id);
-    res.status(200).json(response);
+    const authCookies = req.body;
+    if (id && authCookies && Array.isArray(authCookies)) {
+        const cookieJar = new CookieJar();
+        authCookies.forEach(cookie => {
+            cookieJar.addCookie(Cookie.fromObject(cookie));
+        })
+        let response = await getPolyline(cookieJar, id);
+        res.status(200).json(response);
+    } else {
+        res.status(400).send('Bad Request: missing auth cookies.');
+    }
 }
 
 export {getPolyline};

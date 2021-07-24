@@ -35,62 +35,66 @@ function Leaflet() {
     const [authCookies, setAuthCookies] = useState<Cookie[]>();
 
     useEffect(() => {
-        for (const activity of activities.filter(a => !blacklistedActivities.includes(a.id))) {
-            fetch(`/api/cycling/activities/polyline/${activity.id}`)
-                .then(data => data.json())
-                .then((json: ActivityPolyline) => {
-                    setCompletedCount(prevState => prevState + 1);
+        if (authCookies) {
+            for (const activity of activities.filter(a => !blacklistedActivities.includes(a.id)).filter(a => a.distance > 50 && a.distance < 65 && a.id !== 1791420271)) {
+                postRequest(`/api/cycling/activities/polyline/${activity.id}`, authCookies)
+                    .then(data => data.json())
+                    .then((json: ActivityPolyline) => {
+                        setCompletedCount(prevState => prevState + 1);
 
-                    const newLine: PolylineWithActivity = {
-                        polyLine: polyUtil.decode(json.encodedPolyline),
-                        activity: activity
-                    }
+                        if (json.hasOwnProperty('encodedPolyline')) {
+                            const newLine: PolylineWithActivity = {
+                                polyLine: polyUtil.decode(json.encodedPolyline),
+                                activity: activity
+                            }
 
-                    // create polyline
-                    const pathOptions = {color: randomColor(), weight: 5};
-                    const polyline = L.polyline(newLine.polyLine, {color: randomColor(), weight: 5}).addTo(map);
-                    // re-center map
-                    if (maxBounds) {
-                        const bounds = polyline.getBounds();
-                        maxBounds = L.latLngBounds(
-                            L.latLng(Math.min(maxBounds.getSouthWest().lat, bounds.getSouthWest().lat),
-                                Math.min(maxBounds.getSouthWest().lng, bounds.getSouthWest().lng)),
-                            L.latLng(Math.max(maxBounds.getNorthEast().lat, bounds.getNorthEast().lat),
-                                Math.max(maxBounds.getNorthEast().lng, bounds.getNorthEast().lng))
-                        )
-                    } else {
-                        maxBounds = polyline.getBounds();
-                    }
-                    console.log(JSON.stringify(maxBounds, null, 2));
-                    map?.fitBounds(maxBounds);
-                    // add on-hover
-                    polyline.on('click', e => {
-                        polyline.setStyle({weight: 9});
-                        const popup = L.popup();
-                        popup
-                            .setLatLng(e.latlng)
-                            .setContent(`${newLine.activity.id},
+                            // create polyline
+                            const pathOptions = {color: randomColor(), weight: 5};
+                            const polyline = L.polyline(newLine.polyLine, {color: randomColor(), weight: 5}).addTo(map);
+                            // re-center map
+                            if (maxBounds) {
+                                const bounds = polyline.getBounds();
+                                maxBounds = L.latLngBounds(
+                                    L.latLng(Math.min(maxBounds.getSouthWest().lat, bounds.getSouthWest().lat),
+                                        Math.min(maxBounds.getSouthWest().lng, bounds.getSouthWest().lng)),
+                                    L.latLng(Math.max(maxBounds.getNorthEast().lat, bounds.getNorthEast().lat),
+                                        Math.max(maxBounds.getNorthEast().lng, bounds.getNorthEast().lng))
+                                )
+                            } else {
+                                maxBounds = polyline.getBounds();
+                            }
+                            console.log(JSON.stringify(maxBounds, null, 2));
+                            map?.fitBounds(maxBounds);
+                            // add on-hover
+                            polyline.on('click', e => {
+                                polyline.setStyle({weight: 9});
+                                const popup = L.popup();
+                                popup
+                                    .setLatLng(e.latlng)
+                                    .setContent(`${newLine.activity.id},
                             ${newLine.activity.startTime},
                             ${newLine.activity.distance}km,
                             ${newLine.activity.elevationGain}m,
                             ${newLine.activity.calories}kcal,
                             ${newLine.activity.duration}h`
-                            )
-                            .openOn(map);
+                                    )
+                                    .openOn(map);
 
-                        // const invoicePDF = await http.download(`invoices/download/${rowData[7]}`);
-                        // const url = window.URL.createObjectURL(new Blob([invoicePDF.data]));
-                        // const link = document.createElement('a');
-                        // link.href = url;
-                        // document.body.appendChild(link);
-                        // link.click();
-                    });
-                    // polyline.on('mouseout', e => {
-                    //     polyline.setStyle({weight: 5});
-                    //     map.closePopup();
-                    // });
-                })
-                .catch(err => console.log(err, activity.id))
+                                // const invoicePDF = await http.download(`invoices/download/${rowData[7]}`);
+                                // const url = window.URL.createObjectURL(new Blob([invoicePDF.data]));
+                                // const link = document.createElement('a');
+                                // link.href = url;
+                                // document.body.appendChild(link);
+                                // link.click();
+                            });
+                            // polyline.on('mouseout', e => {
+                            //     polyline.setStyle({weight: 5});
+                            //     map.closePopup();
+                            // });
+                        }
+                    })
+                    .catch(err => console.log(err, activity.id))
+            }
         }
     }, [activities])
 
