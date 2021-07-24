@@ -74,6 +74,7 @@ function Leaflet() {
                                     .setContent(`${newLine.activity.id},
                             ${newLine.activity.startTime},
                             ${newLine.activity.distance}km,
+                            ${newLine.activity.averageSpeed}km/h,
                             ${newLine.activity.elevationGain}m,
                             ${newLine.activity.calories}kcal,
                             ${newLine.activity.duration}h`
