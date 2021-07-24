@@ -28,14 +28,26 @@ let maxBounds: LatLngBounds;
 // cologne activities blacklisted to avoid to big map-maxBounds
 const blacklistedActivities = [7019832827, 7008550301, 7019832827, 7022366656, 7013851476];
 
+const AUTH_COOKIES_KEY = 'authCookies';
 function Leaflet() {
     const [map, setMap] = useState<Map>();
     const [activities, setActivities] = useState<Activity[] | []>([]);
     const [completedCount, setCompletedCount] = useState<number>(0);
-    const [authCookies, setAuthCookies] = useState<Cookie[]>();
+    const [authCookies, setAuthCookies] = useState<Cookie[]>(() => {
+        const fromLocalStorage = localStorage.getItem(AUTH_COOKIES_KEY);
+        if (fromLocalStorage) {
+            return JSON.parse(fromLocalStorage);
+        }
+        return [];
+    });
+
+    // whenever authCookies change, store them to user's localStorage
+    useEffect(() => {
+        localStorage.setItem(AUTH_COOKIES_KEY, JSON.stringify(authCookies));
+    }, [authCookies]);
 
     useEffect(() => {
-        if (authCookies) {
+        if (authCookies.length > 0) {
             for (const activity of activities.filter(a => !blacklistedActivities.includes(a.id)).filter(a => a.distance > 50 && a.distance < 65 && a.id !== 1791420271)) {
                 postRequest(`/api/cycling/activities/polyline/${activity.id}`, authCookies)
                     .then(data => data.json())
@@ -100,7 +112,7 @@ function Leaflet() {
     }, [activities])
 
     useEffect(() => {
-        if (authCookies) {
+        if (authCookies.length > 0) {
             postRequest('/api/cycling/activities', authCookies)
                 .then(data => data.json())
                 .then((json: [Activity]) => setActivities(json))
@@ -122,8 +134,7 @@ function Leaflet() {
     const completed = Math.round((completedCount / activities.length) * 100);
     return (
         <>
-            {!authCookies && <Login title={'Cycling Activities'} onLogin={handleLogin} />}
-            {authCookies && <p>{JSON.stringify(authCookies?.cookies, null, 2)}</p>}
+            {authCookies.length === 0 && <Login title={'Cycling Activities'} onLogin={handleLogin} />}
             <p>{`${completedCount} / ${activities.length}`}</p>
             <ProgressBar
                 completed={completed ? completed : 0}
