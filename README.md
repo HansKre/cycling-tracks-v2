@@ -43,3 +43,7 @@ Comparing a cycling activity `7147476023` with ca. 37km length.
   - helper method for fetching which expects url only
   - harmonize usage of fetch-library (tunneled-got vs. node-fetch)
 - Error management -> change status code on error
+
+## Good Reading
+
+- [Session Storage and Local Storage in React (using hooks)](https://www.robinwieruch.de/local-storage-react)
