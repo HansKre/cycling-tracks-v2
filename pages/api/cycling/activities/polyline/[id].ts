@@ -1,6 +1,7 @@
 import type {NextApiRequest, NextApiResponse} from 'next';
 import GarminActivityPolyline from '../../../types/incoming/garmin-activity-polyline';
 import Polyline from '../../../types/outgoing/polyline';
+import Response from '../../../types/Response';
 const config = require('../../../config')
 import {fetch, CookieJar, Cookie} from "node-fetch-cookies";
 
@@ -44,11 +45,6 @@ const fetchPolyline = async (cookieJar: CookieJar, id: string): Promise<GarminAc
     } catch (err) {
         return err.message;
     }
-}
-
-type Response = {
-    status: number;
-    statusText: string;
 }
 
 const handleError = (response: Response): Response => {

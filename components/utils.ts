@@ -1,5 +1,5 @@
 export async function postRequest(url: string, jsonData: object) {
-    return await fetch(url, {
+    const response = await fetch(url, {
         method: 'POST',
         body: JSON.stringify(jsonData),
         headers: {
@@ -7,4 +7,8 @@ export async function postRequest(url: string, jsonData: object) {
             'Content-Type': 'application/json'
         }
     });
+    if (response.status != 200) {
+        throw new Error(`status: ${response.status}, statusText: ${response.statusText}`);
+    }
+    return response;
 }

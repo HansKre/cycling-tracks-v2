@@ -48,7 +48,7 @@ function Leaflet() {
     }, [authCookies]);
 
     useEffect(() => {
-        if (authCookies.length > 0) {
+        if (Array.isArray(authCookies) && authCookies.length > 0) {
             for (const activity of activities.filter(a => !blacklistedActivities.includes(a.id)).filter(a => a.distance > 50 && a.distance < 65 && a.id !== 1791420271)) {
                 postRequest(config.polylineApiUrl(activity.id), authCookies)
                     .then(data => data.json())
@@ -112,12 +112,17 @@ function Leaflet() {
         }
     }, [activities])
 
+    // fetch activities
+    // TODO: custom useActivities-Hook
     useEffect(() => {
-        if (authCookies.length > 0) {
+        if (Array.isArray(authCookies) && authCookies.length > 0) {
             postRequest(config.activitiesApiUrl, authCookies)
                 .then(data => data.json())
-                .then((json: [Activity]) => setActivities(json))
-                .catch(err => console.log(err))
+                .then(({body}) => setActivities(body))
+                .catch(err => {
+                    console.log(err);
+                    resetAuthCookies();
+                })
         }
     }, [authCookies])
 
@@ -135,7 +140,7 @@ function Leaflet() {
     const completed = Math.round((completedCount / activities.length) * 100);
     return (
         <>
-            {authCookies.length === 0 && <Login title={'Cycling Activities'} onLogin={handleLogin} />}
+            {(!Array.isArray(authCookies) || authCookies.length === 0) && <Login title={'Cycling Activities'} onLogin={handleLogin} />}
             <p>{`${completedCount} / ${activities.length}`}</p>
             <ProgressBar
                 completed={completed ? completed : 0}
@@ -162,6 +167,11 @@ function Leaflet() {
             </MapContainer>
         </>
     )
+
+    function resetAuthCookies() {
+        localStorage.removeItem(AUTH_COOKIES_KEY);
+        setAuthCookies([]);
+    }
 }
 
 export default Leaflet

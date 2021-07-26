@@ -1,6 +1,7 @@
 import type {NextApiRequest, NextApiResponse} from 'next';
 import GarminActivity from '../../types/incoming/garmin-activity';
 import Activity from '../../types/outgoing/activity';
+import Response from '../../types/Response';
 const client = require('tunneled-got');
 const config = require('../../config')
 const {timeConverter} = require('../../utils.js');
@@ -42,7 +43,7 @@ enum ActivityType {
 /**
  * @function fetchActivities Download activities from Garmin
  */
-const fetchActivities = async (cookieJar: CookieJar, activityType: ActivityType = ActivityType.CYCLING): Promise<GarminActivity[] | Response> => {
+const fetchActivities = async (cookieJar: CookieJar, activityType: ActivityType = ActivityType.CYCLING): Promise<Response<GarminActivity[] | null>> => {
     try {
         // const activities = await client.fetch(config.activitiesUrl(activityType),
         // options);
@@ -50,51 +51,42 @@ const fetchActivities = async (cookieJar: CookieJar, activityType: ActivityType 
             options);
         if (response.status === 200) {
             const json = await response.json()
-            return json;
+            return {status: response.status, statusText: response.statusText, body: json};
         } else {
-            return handleError(response as Response);
+            return {status: response.status, statusText: response.statusText, body: null};
         }
     } catch (err) {
         return err.message;
     }
 }
 
-type Response = {
-    status: number;
-    statusText: string;
-}
-
-const handleError = (response: Response): Response => {
-    return {
-        status: response.status,
-        statusText: response.statusText
-    }
-}
-
 /**
 * @function getActivities Downloads activities from Garmin and maps them to the internal Activity-Datamodel
 */
-async function getActivities(cookieJar: CookieJar): Promise<Activity[] | string> {
-    const data = await fetchActivities(cookieJar, ActivityType.CYCLING);
-    let response;
-    if (Array.isArray(data)) {
-        const activities: GarminActivity[] = <GarminActivity[]>data;
-        response = <Activity[]>activities.map((a: GarminActivity) => ({
-            id: a.activityId,
-            startTime: a.startTimeLocal,
-            name: a.activityName,
-            type: a.activityType.typeKey,
-            distance: parseFloat((a.distance / 1000)?.toFixed(2)),
-            duration: new Date(a.duration * 1000).toISOString().substr(11, 8),
-            elevationGain: parseFloat((a.elevationGain)?.toFixed(2)),
-            elevationLoss: parseFloat((a.elevationLoss)?.toFixed(2)),
-            averageSpeed: parseFloat((a.averageSpeed * 3.612716723).toFixed(2)),
-            calories: a.calories
-        }));
+async function getActivities(cookieJar: CookieJar): Promise<Response<Activity[] | null>> {
+    const response = await fetchActivities(cookieJar, ActivityType.CYCLING);
+    if (response.status === 200) {
+        if (Array.isArray(response.body)) {
+            const activities: GarminActivity[] = <GarminActivity[]>response.body;
+            const mappedActivities = <Activity[]>activities.map((a: GarminActivity) => ({
+                id: a.activityId,
+                startTime: a.startTimeLocal,
+                name: a.activityName,
+                type: a.activityType.typeKey,
+                distance: parseFloat((a.distance / 1000)?.toFixed(2)),
+                duration: new Date(a.duration * 1000).toISOString().substr(11, 8),
+                elevationGain: parseFloat((a.elevationGain)?.toFixed(2)),
+                elevationLoss: parseFloat((a.elevationLoss)?.toFixed(2)),
+                averageSpeed: parseFloat((a.averageSpeed * 3.612716723).toFixed(2)),
+                calories: a.calories
+            }));
+            return {status: 200, statusText: 'Ok', body: mappedActivities}
+        } else {
+            return {status: 500, statusText: 'Expected response.body to be an array of GarminActivity'}
+        }
     } else {
-        response = data;
+        return {status: response.status, statusText: response.statusText}
     }
-    return response;
 }
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
@@ -109,10 +101,10 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         authCookies.forEach(cookie => {
             cookieJar.addCookie(Cookie.fromObject(cookie));
         })
-        let response = await getActivities(cookieJar);
-        res.status(200).json(response);
+        const response = await getActivities(cookieJar);
+        res.status(response.status).json(response);
     } else {
-        res.status(400).send('Bad Request: missing auth cookies.');
+        res.status(400).send('Bad Request: missing auth cookies or improper format.');
     }
 }
 
