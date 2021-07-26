@@ -30,6 +30,7 @@ let maxBounds: LatLngBounds;
 const blacklistedActivities = [7019832827, 7008550301, 7019832827, 7022366656, 7013851476];
 
 const AUTH_COOKIES_KEY = 'authCookies';
+const BG_COLOR = '#696969';
 function Leaflet() {
     const [map, setMap] = useState<Map>();
     const [activities, setActivities] = useState<Activity[] | []>([]);
@@ -146,7 +147,7 @@ function Leaflet() {
             <ProgressBar
                 completed={completed ? completed : 0}
                 borderRadius={'0px'}
-                bgColor={'#696969'}
+                bgColor={BG_COLOR}
             />
             <MapContainer
                 className={styles.leaflet}
