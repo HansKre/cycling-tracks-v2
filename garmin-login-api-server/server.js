@@ -231,6 +231,21 @@ app.get("/", (req, res) => {
     res.send("Hello World!");
 });
 
-app.listen(port, () => {
-    console.log(`Example app listening at http://localhost:${port}`);
+const https = require('https');
+const fs = require('fs');
+
+const options = {
+    key: fs.readFileSync('key.pem'),
+    cert: fs.readFileSync('cert.pem')
+};
+
+https.createServer(options, function (req, res) {
+    res.writeHead(200);
+    res.end("hello world\n");
+}, app).listen(port, () => {
+    console.log(`Example app listening at https://localhost:${port}`);
 });
+
+// app.listen(port, () => {
+//     console.log(`Example app listening at http://localhost:${port}`);
+// });

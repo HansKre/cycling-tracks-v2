@@ -32,6 +32,14 @@ Comparing a cycling activity `7147476023` with ca. 37km length.
 
 ## Backlog
 
+### Raspberry
+
+- [use pm2 // ADVANCED, PRODUCTION PROCESS MANAGER FOR NODE.JS](https://pm2.keymetrics.io)
+- use `scp <folder>` for raspi deployments
+- use `git actions` for raspi deployments?
+
+### Overall
+
 - username/password auth -> local storage
 - use localstorage
 - [watch](https://egghead.io/lessons/react-add-geojson-location-data-to-a-map-using-markers-and-popups-in-react-leaflet)
