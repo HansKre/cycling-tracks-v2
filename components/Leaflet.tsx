@@ -7,7 +7,7 @@ import styles from './Leaflet.module.css';
 const polyUtil = require('polyline-encoded');
 import L, {LatLngBounds} from 'leaflet';
 import ProgressBar from "@ramonak/react-progress-bar";
-import Login from './Login';
+import Login from './login/Login';
 import Cookie from '../pages/api/types/incoming/Cookie';
 import {postRequest} from './utils';
 import config from '../pages/api/config'
