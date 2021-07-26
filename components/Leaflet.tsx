@@ -126,14 +126,15 @@ function Leaflet() {
         }
     }, [authCookies])
 
-    const handleLogin = async (username: string, password: string) => {
-        const response = await postRequest(config.loginApiUrl, {username, password});
-        if (response.status === 200) {
+    const handleLogin = async (username: string, password: string): Promise<boolean> => {
+        try {
+            const response = await postRequest(config.loginApiUrl, {username, password});
             const newAuthCookies: Cookie[] = await response.json();
-            console.log(newAuthCookies);
             setAuthCookies(newAuthCookies);
-        } else {
-            alert(`Something went wrong: ${response.status} - ${response.statusText}`);
+            return true;
+        } catch (error) {
+            console.log(`Something went wrong: ${error.message}`);
+            return false;
         }
     }
 

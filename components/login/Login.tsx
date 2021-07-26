@@ -13,18 +13,24 @@ import styles from './Login.module.css'
 
 type Props = {
     title: string;
-    onLogin: (username: string, password: string) => void;
+    onLogin: (username: string, password: string) => Promise<boolean>;
+    onForgotPasswordClicked?: () => void;
 }
 
 function Login(props: Props) {
-    const {title, onLogin} = props;
+    const {title, onLogin, onForgotPasswordClicked} = props;
     const [username, setUsername] = useState('');
     const [password, setPassword] = useState('');
+    const [loginError, setLoginError] = useState('');
 
-    function handleSubmit(event: React.SyntheticEvent) {
+    async function handleSubmit(event: React.SyntheticEvent) {
         event.preventDefault();
         if (username.length > 0 && password.length > 0) {
-            onLogin(username, password);
+            setLoginError('');
+            if (!(await onLogin(username, password))) {
+                setLoginError('Login failed');
+            }
+            setPassword('');
         }
     }
 
@@ -93,17 +99,22 @@ function Login(props: Props) {
                                                 type="submit"
                                                 className={styles.buttonBlock}
                                             >
-                                                Submit
+                                                Login
                                             </Button>
                                         </Grid>
                                     </Grid>
                                 </form>
                             </Grid>
-                            <Grid item>
-                                <Link href="#" variant="body2">
+                            {onForgotPasswordClicked && <Grid item>
+                                <Link href="#" variant="body2" onClick={onForgotPasswordClicked} >
                                     Forgot Password?
                                 </Link>
-                            </Grid>
+                            </Grid>}
+                            {loginError && <Grid item>
+                                <Typography component="p" variant="body2" color="error" >
+                                    {loginError}
+                                </Typography>
+                            </Grid>}
                         </Paper>
                     </Grid>
                 </Grid>
