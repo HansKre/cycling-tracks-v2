@@ -38,19 +38,19 @@ function Login(props: Props) {
         <div>
             <AppBar position="static" color="primary">
                 <Toolbar>
-                    <Grid container justify="center" wrap="wrap">
+                    <Grid container justifyContent="center" wrap="wrap">
                         <Grid item>
                             <Typography variant="h6">{title}</Typography>
                         </Grid>
                     </Grid>
                 </Toolbar>
             </AppBar>
-            <Grid container spacing={0} justify="center" direction="row">
+            <Grid container spacing={0} justifyContent="center" direction="row">
                 <Grid item>
                     <Grid
                         container
                         direction="column"
-                        justify="center"
+                        justifyContent="center"
                         spacing={2}
                         className={styles.loginForm}
                     >
@@ -71,6 +71,7 @@ function Login(props: Props) {
                                             <TextField
                                                 type="email"
                                                 placeholder="Email"
+                                                autoComplete="username"
                                                 fullWidth
                                                 name="username"
                                                 variant="outlined"
@@ -84,6 +85,7 @@ function Login(props: Props) {
                                             <TextField
                                                 type="password"
                                                 placeholder="Password"
+                                                autoComplete="current-password"
                                                 fullWidth
                                                 name="password"
                                                 variant="outlined"
