@@ -19,11 +19,6 @@ const randomColor = () => {
 
 const stuttgart = {lat: 48.783333, lng: 9.183333};
 
-type PolylineWithActivity = {
-    polyLine: LatLngExpression[];
-    activity: Activity;
-}
-
 let maxBounds: LatLngBounds;
 
 // cologne activities blacklisted to avoid to big map-maxBounds
@@ -48,67 +43,26 @@ function Leaflet() {
         localStorage.setItem(AUTH_COOKIES_KEY, JSON.stringify(authCookies));
     }, [authCookies]);
 
+    // fetch polyline
     useEffect(() => {
         if (Array.isArray(authCookies) && authCookies.length > 0) {
             for (const activity of activities.filter(a => !blacklistedActivities.includes(a.id)).filter(a => a.distance > 50 && a.distance < 65 && a.id !== 1791420271)) {
-                postRequest(config.polylineApiUrl(activity.id), authCookies)
-                    .then(data => data.json())
-                    .then((json: ActivityPolyline) => {
-                        setCompletedCount(prevState => prevState + 1);
-
-                        if (json.hasOwnProperty('encodedPolyline')) {
-                            const newLine: PolylineWithActivity = {
-                                polyLine: polyUtil.decode(json.encodedPolyline),
-                                activity: activity
+                const fromLocalStorage = localStorage.getItem(activity?.id?.toString());
+                if (fromLocalStorage) {
+                    const polyline: LatLngExpression[] = polyUtil.decode(fromLocalStorage);
+                    polylineToMap(setCompletedCount, polyline, activity, map);
+                } else {
+                    postRequest(config.polylineApiUrl(activity.id), authCookies)
+                        .then(data => data.json())
+                        .then((json: ActivityPolyline) => {
+                            if (json.hasOwnProperty('encodedPolyline')) {
+                                const polyline: LatLngExpression[] = polyUtil.decode(json.encodedPolyline);
+                                polylineToMap(setCompletedCount, polyline, activity, map);
+                                localStorage.setItem(activity.id.toString(), json.encodedPolyline);
                             }
-
-                            // create polyline
-                            const pathOptions = {color: randomColor(), weight: 5};
-                            const polyline = L.polyline(newLine.polyLine, {color: randomColor(), weight: 5}).addTo(map);
-                            // re-center map
-                            if (maxBounds) {
-                                const bounds = polyline.getBounds();
-                                maxBounds = L.latLngBounds(
-                                    L.latLng(Math.min(maxBounds.getSouthWest().lat, bounds.getSouthWest().lat),
-                                        Math.min(maxBounds.getSouthWest().lng, bounds.getSouthWest().lng)),
-                                    L.latLng(Math.max(maxBounds.getNorthEast().lat, bounds.getNorthEast().lat),
-                                        Math.max(maxBounds.getNorthEast().lng, bounds.getNorthEast().lng))
-                                )
-                            } else {
-                                maxBounds = polyline.getBounds();
-                            }
-                            console.log(JSON.stringify(maxBounds, null, 2));
-                            map?.fitBounds(maxBounds);
-                            // add on-hover
-                            polyline.on('click', e => {
-                                polyline.setStyle({weight: 9});
-                                const popup = L.popup();
-                                popup
-                                    .setLatLng(e.latlng)
-                                    .setContent(`${newLine.activity.id},
-                            ${newLine.activity.startTime},
-                            ${newLine.activity.distance}km,
-                            ${newLine.activity.averageSpeed}km/h,
-                            ${newLine.activity.elevationGain}m,
-                            ${newLine.activity.calories}kcal,
-                            ${newLine.activity.duration}h`
-                                    )
-                                    .openOn(map);
-
-                                // const invoicePDF = await http.download(`invoices/download/${rowData[7]}`);
-                                // const url = window.URL.createObjectURL(new Blob([invoicePDF.data]));
-                                // const link = document.createElement('a');
-                                // link.href = url;
-                                // document.body.appendChild(link);
-                                // link.click();
-                            });
-                            // polyline.on('mouseout', e => {
-                            //     polyline.setStyle({weight: 5});
-                            //     map.closePopup();
-                            // });
-                        }
-                    })
-                    .catch(err => console.log(err, activity.id))
+                        })
+                        .catch(err => console.log(err, activity.id));
+                }
             }
         }
     }, [activities])
@@ -142,7 +96,7 @@ function Leaflet() {
     const completed = Math.round((completedCount / activities.length) * 100);
     return (
         <>
-            {(!Array.isArray(authCookies) || authCookies.length === 0) && <Login title={'Cycling Activities'} onLogin={handleLogin} />}
+            {(!Array.isArray(authCookies) || authCookies.length === 0) && <Login title={'Cycling Activities'} onLogin={handleLogin} primaryColor={BG_COLOR} />}
             <p>{`${completedCount} / ${activities.length}`}</p>
             <ProgressBar
                 completed={completed ? completed : 0}
@@ -176,4 +130,48 @@ function Leaflet() {
     }
 }
 
-export default Leaflet
+export default Leaflet;
+
+function polylineToMap(setCompletedCount: React.Dispatch<React.SetStateAction<number>>, polyline: LatLngExpression[], activity: Activity, map: Map | undefined) {
+    setCompletedCount(prevState => prevState + 1);
+
+    // create polyline
+    const pathOptions = {color: randomColor(), weight: 5};
+    const leafletPolyline = L.polyline(polyline, {color: randomColor(), weight: 5}).addTo(map);
+    // re-center map
+    if (maxBounds) {
+        const bounds = leafletPolyline.getBounds();
+        maxBounds = L.latLngBounds(
+            L.latLng(Math.min(maxBounds.getSouthWest().lat, bounds.getSouthWest().lat),
+                Math.min(maxBounds.getSouthWest().lng, bounds.getSouthWest().lng)),
+            L.latLng(Math.max(maxBounds.getNorthEast().lat, bounds.getNorthEast().lat),
+                Math.max(maxBounds.getNorthEast().lng, bounds.getNorthEast().lng))
+        );
+    } else {
+        maxBounds = leafletPolyline.getBounds();
+    }
+    console.log(JSON.stringify(maxBounds, null, 2));
+    map?.fitBounds(maxBounds);
+    // add on-hover
+    leafletPolyline.on('click', e => {
+        leafletPolyline.setStyle({weight: 9});
+        const popup = L.popup();
+        popup
+            .setLatLng(e.latlng)
+            .setContent(`${activity.id},
+                            ${activity.startTime},
+                            ${activity.distance}km,
+                            ${activity.averageSpeed}km/h,
+                            ${activity.elevationGain}m,
+                            ${activity.calories}kcal,
+                            ${activity.duration}h`
+            )
+            .openOn(map);
+
+    });
+    // leafletPolyline.on('mouseout', e => {
+    //     leafletPolyline.setStyle({weight: 5});
+    //     map.closePopup();
+    // });
+}
+
