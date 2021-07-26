@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, {useState} from "react";
 import {
     Button,
     TextField,
@@ -11,16 +11,17 @@ import {
 } from "@material-ui/core";
 import styles from './Login.module.css'
 
-// type Props = {
+type Props = {
+    title: string;
+    onLogin: (username: string, password: string) => void;
+}
 
-// }
-
-function Login({ title, onLogin }) {
+function Login(props: Props) {
+    const {title, onLogin} = props;
     const [username, setUsername] = useState('');
     const [password, setPassword] = useState('');
-    const [authflag, setAuthflag] = useState('');
 
-    function handleSubmit(event) {
+    function handleSubmit(event: React.SyntheticEvent) {
         event.preventDefault();
         if (username.length > 0 && password.length > 0) {
             onLogin(username, password);
@@ -29,7 +30,7 @@ function Login({ title, onLogin }) {
 
     return (
         <div>
-            <AppBar position="static" alignitems="center" color="primary">
+            <AppBar position="static" color="primary">
                 <Toolbar>
                     <Grid container justify="center" wrap="wrap">
                         <Grid item>
