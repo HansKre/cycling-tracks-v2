@@ -58,7 +58,6 @@ function Leaflet() {
 
     // execute filter
     useEffect(() => {
-        console.log('Filtering', filters);
         if (Array.isArray(authCookies) && authCookies.length > 0 && map) {
             const filteredActivities = activities.filter(a => {
                 return Object.values(filters).reduce((prev, filterFn) => prev && filterFn(a), true)
@@ -77,15 +76,20 @@ function Leaflet() {
                 const fromLocalStorage = localStorage.getItem(activity?.id?.toString());
                 if (fromLocalStorage) {
                     const polyline: LatLngExpression[] = polyUtil.decode(fromLocalStorage);
-                    polylineToMap(setCompletedCount, polyline, activity, map, polylineClickedRef, setPolylineClicked);
+                    polylineToMap(polyline, activity, map, polylineClickedRef, setPolylineClicked);
+                    setCompletedCount(prev => prev + 1);
                 } else {
                     postRequest(config.polylineApiUrl(activity.id), authCookies)
                         .then(data => data.json())
                         .then((json: ActivityPolyline) => {
                             if (json.hasOwnProperty('encodedPolyline')) {
                                 const polyline: LatLngExpression[] = polyUtil.decode(json.encodedPolyline);
-                                polylineToMap(setCompletedCount, polyline, activity, map, polylineClickedRef, setPolylineClicked);
+                                polylineToMap(polyline, activity, map, polylineClickedRef, setPolylineClicked);
                                 localStorage.setItem(activity.id.toString(), json.encodedPolyline);
+                                setCompletedCount(prev => prev + 1);
+                            } else {
+                                localStorage.setItem(activity.id.toString(), '');
+                                setCompletedCount(prev => prev + 1);
                             }
                         })
                         .catch(err => console.log(err, activity.id));
@@ -133,14 +137,12 @@ function Leaflet() {
 
     const handleDistanceChange = (event: React.ChangeEvent<{}>, newValue: number | number[]) => {
         if (Array.isArray(newValue)) {
-            console.log('Updating', newValue);
             setMinMaxDistanceVal(newValue);
         }
     }
 
+    // reset distance-filter
     useEffect(() => {
-        // setFilters(prev => {prev.delete('distance'); return prev;});
-        console.log('Updating filters', minMaxDistanceVal);
         setFilters(prev => (
             {
                 ...prev,
@@ -209,14 +211,12 @@ export default Leaflet;
 *   to Closure, otherwise the polylineClicked value will be memoized and not updated by setPolylineClicked.
  */
 function polylineToMap(
-    setCompletedCount: React.Dispatch<React.SetStateAction<number>>,
     polyline: LatLngExpression[],
     activity: Activity,
     map: LeafletMap,
     polylineClickedRef: React.MutableRefObject<boolean>,
     setPolylineClicked: React.Dispatch<React.SetStateAction<boolean>>
 ) {
-    setCompletedCount(prevState => prevState + 1);
     // create polyline
     const pathOptions = {color: randomColor(), weight: 5};
     const leafletPolyline = L.polyline(polyline, {color: randomColor(), weight: 5}).addTo(map);
