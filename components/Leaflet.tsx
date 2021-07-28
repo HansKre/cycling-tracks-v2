@@ -183,12 +183,10 @@ function polylineToMap(
     });
     leafletPolyline.on('click', (e: LeafletMouseEvent) => {
         setPolylineClicked(true);
-        console.log('clicked', polylineClickedRef.current);
         addPopup(e);
     });
     leafletPolyline.on('mouseout', e => {
         if (!polylineClickedRef.current) {
-            console.log('mouse out', polylineClickedRef.current);
             leafletPolyline.setStyle({weight: 5});
             map.closePopup();
         }
@@ -208,8 +206,8 @@ function polylineToMap(
                             ${activity.duration}h`
             )
             .on('remove', () => {
+                // close on-click, when mouseout-event is not triggered
                 if (polylineClickedRef.current) {
-                    console.log('Executing custom remove algorithm');
                     leafletPolyline.setStyle({weight: 5});
                     setPolylineClicked(false);
                 }
