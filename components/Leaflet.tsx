@@ -213,12 +213,13 @@ function Leaflet() {
     }
 
     const completed = Math.round((completedCount / filteredActivities.length) * 100);
+    const isLoggedIn = (Array.isArray(authCookies) && authCookies.length > 0);
     return (
         <>
             {backDrop()}
-            {distanceRangeSlider()}
+            {isLoggedIn && distanceRangeSlider()}
             {authCookies.length > 0 && <button onClick={(e) => setAuthCookies([])} >Logout</button>}
-            {(!Array.isArray(authCookies) || authCookies.length === 0) && <Login title={'Cycling Activities'} onLogin={handleLogin} primaryColor={BG_COLOR} />}
+            {!isLoggedIn && <Login title={'Cycling Activities'} onLogin={handleLogin} primaryColor={BG_COLOR} />}
             <p>{`${completedCount} / ${filteredActivities.length}`}</p>
             <ProgressBar
                 completed={completed ? completed : 0}
