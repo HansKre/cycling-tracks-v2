@@ -1,11 +1,10 @@
-import {LatLngExpression, Map} from 'leaflet';
+import L, {LatLngExpression, Map, LatLngBounds, LeafletMouseEvent} from 'leaflet';
 import React, {useState, useEffect} from 'react';
 import {MapContainer, TileLayer} from 'react-leaflet';
 import Activity from '../pages/api/types/outgoing/activity';
 import ActivityPolyline from '../pages/api/types/outgoing/polyline';
 import styles from './Leaflet.module.css';
 const polyUtil = require('polyline-encoded');
-import L, {LatLngBounds} from 'leaflet';
 import ProgressBar from "@ramonak/react-progress-bar";
 import Login from './login/Login';
 import Cookie from '../pages/api/types/incoming/Cookie';
@@ -45,7 +44,7 @@ function Leaflet() {
 
     // fetch polyline
     useEffect(() => {
-        if (Array.isArray(authCookies) && authCookies.length > 0) {
+        if (Array.isArray(authCookies) && authCookies.length > 0 && map) {
             for (const activity of activities.filter(a => !blacklistedActivities.includes(a.id)).filter(a => a.distance > 50 && a.distance < 65 && a.id !== 1791420271)) {
                 const fromLocalStorage = localStorage.getItem(activity?.id?.toString());
                 if (fromLocalStorage) {
@@ -132,7 +131,12 @@ function Leaflet() {
 
 export default Leaflet;
 
-function polylineToMap(setCompletedCount: React.Dispatch<React.SetStateAction<number>>, polyline: LatLngExpression[], activity: Activity, map: Map | undefined) {
+function polylineToMap(
+    setCompletedCount: React.Dispatch<React.SetStateAction<number>>,
+    polyline: LatLngExpression[],
+    activity: Activity,
+    map: Map
+) {
     setCompletedCount(prevState => prevState + 1);
 
     // create polyline
@@ -153,7 +157,7 @@ function polylineToMap(setCompletedCount: React.Dispatch<React.SetStateAction<nu
     console.log(JSON.stringify(maxBounds, null, 2));
     map?.fitBounds(maxBounds);
     // add on-hover
-    leafletPolyline.on('click', e => {
+    leafletPolyline.on('click', (e: LeafletMouseEvent) => {
         leafletPolyline.setStyle({weight: 9});
         const popup = L.popup();
         popup
