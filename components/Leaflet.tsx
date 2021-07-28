@@ -1,5 +1,5 @@
 import L, {LatLngExpression, Map, LatLngBounds, LeafletMouseEvent} from 'leaflet';
-import React, {useState, useEffect} from 'react';
+import React, {useState, useEffect, useRef} from 'react';
 import {MapContainer, TileLayer} from 'react-leaflet';
 import Activity from '../pages/api/types/outgoing/activity';
 import ActivityPolyline from '../pages/api/types/outgoing/polyline';
@@ -36,6 +36,13 @@ function Leaflet() {
         }
         return [];
     });
+    const [polylineClicked, setPolylineClicked] = useState(false);
+    const polylineClickedRef = useRef(polylineClicked);
+
+    // update ref's value every time referenced value is updated
+    useEffect(() => {
+        polylineClickedRef.current = polylineClicked
+    }, [polylineClicked]);
 
     // whenever authCookies change, store them to user's localStorage
     useEffect(() => {
@@ -46,19 +53,19 @@ function Leaflet() {
     useEffect(() => {
         if (Array.isArray(authCookies) && authCookies.length > 0 && map) {
             // reset map content before re-rendering it again
-            map && clearMap(map, setCompletedCount);
+            clearMap(map, setCompletedCount, setPolylineClicked);
             for (const activity of activities.filter(a => !blacklistedActivities.includes(a.id)).filter(a => a.distance > 50 && a.distance < 65 && a.id !== 1791420271)) {
                 const fromLocalStorage = localStorage.getItem(activity?.id?.toString());
                 if (fromLocalStorage) {
                     const polyline: LatLngExpression[] = polyUtil.decode(fromLocalStorage);
-                    polylineToMap(setCompletedCount, polyline, activity, map);
+                    polylineToMap(setCompletedCount, polyline, activity, map, polylineClickedRef, setPolylineClicked);
                 } else {
                     postRequest(config.polylineApiUrl(activity.id), authCookies)
                         .then(data => data.json())
                         .then((json: ActivityPolyline) => {
                             if (json.hasOwnProperty('encodedPolyline')) {
                                 const polyline: LatLngExpression[] = polyUtil.decode(json.encodedPolyline);
-                                polylineToMap(setCompletedCount, polyline, activity, map);
+                                polylineToMap(setCompletedCount, polyline, activity, map, polylineClickedRef, setPolylineClicked);
                                 localStorage.setItem(activity.id.toString(), json.encodedPolyline);
                             }
                         })
@@ -129,14 +136,20 @@ function Leaflet() {
 
 export default Leaflet;
 
+/**
+ * Configures polyline with popup for mouse-events and adds it to the map.
+* @param polylineClickedRef needs to be a refernce to polylineClick due
+*   to Closure, otherwise the polylineClicked value will be memoized and not updated by setPolylineClicked.
+ */
 function polylineToMap(
     setCompletedCount: React.Dispatch<React.SetStateAction<number>>,
     polyline: LatLngExpression[],
     activity: Activity,
-    map: Map
+    map: Map,
+    polylineClickedRef: React.MutableRefObject<boolean>,
+    setPolylineClicked: React.Dispatch<React.SetStateAction<boolean>>
 ) {
     setCompletedCount(prevState => prevState + 1);
-
     // create polyline
     const pathOptions = {color: randomColor(), weight: 5};
     const leafletPolyline = L.polyline(polyline, {color: randomColor(), weight: 5}).addTo(map);
@@ -152,12 +165,30 @@ function polylineToMap(
     } else {
         maxBounds = leafletPolyline.getBounds();
     }
-    console.log(JSON.stringify(maxBounds, null, 2));
-    map?.fitBounds(maxBounds);
+    map.fitBounds(maxBounds);
     // add on-hover
+    let popup;
+    leafletPolyline.on('mouseover', (e: LeafletMouseEvent) => {
+        if (!polylineClickedRef.current) {
+            addPopup(e);
+        }
+    });
     leafletPolyline.on('click', (e: LeafletMouseEvent) => {
+        setPolylineClicked(true);
+        console.log('clicked', polylineClickedRef.current);
+        addPopup(e);
+    });
+    leafletPolyline.on('mouseout', e => {
+        if (!polylineClickedRef.current) {
+            console.log('mouse out', polylineClickedRef.current);
+            leafletPolyline.setStyle({weight: 5});
+            map.closePopup();
+        }
+    });
+
+    function addPopup(e: LeafletMouseEvent) {
         leafletPolyline.setStyle({weight: 9});
-        const popup = L.popup();
+        popup = L.popup();
         popup
             .setLatLng(e.latlng)
             .setContent(`${activity.id},
@@ -168,13 +199,15 @@ function polylineToMap(
                             ${activity.calories}kcal,
                             ${activity.duration}h`
             )
+            .on('remove', () => {
+                if (polylineClickedRef.current) {
+                    console.log('Executing custom remove algorithm');
+                    leafletPolyline.setStyle({weight: 5});
+                    setPolylineClicked(false);
+                }
+            })
             .openOn(map);
-
-    });
-    // leafletPolyline.on('mouseout', e => {
-    //     leafletPolyline.setStyle({weight: 5});
-    //     map.closePopup();
-    // });
+    }
 }
 
 /**
@@ -182,7 +215,8 @@ function polylineToMap(
  */
 function clearMap(
     map: Map,
-    setCompletedCount: React.Dispatch<React.SetStateAction<number>>
+    setCompletedCount: React.Dispatch<React.SetStateAction<number>>,
+    setPolylineClicked: React.Dispatch<React.SetStateAction<boolean>>
 ) {
     map.eachLayer((layer: L.Layer) => {
         const hasEmptyContrib = !(layer.getAttribution && layer.getAttribution());
@@ -192,4 +226,5 @@ function clearMap(
         }
     })
     setCompletedCount(0);
+    setPolylineClicked(false);
 }
