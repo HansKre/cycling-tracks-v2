@@ -28,6 +28,7 @@ const BG_COLOR = '#696969';
 function Leaflet() {
     const [map, setMap] = useState<Map>();
     const [activities, setActivities] = useState<Activity[] | []>([]);
+    const [filteredActivities, setFilteredActivities] = useState<Activity[] | []>([]);
     const [completedCount, setCompletedCount] = useState<number>(0);
     const [authCookies, setAuthCookies] = useState<Cookie[]>(() => {
         const fromLocalStorage = localStorage.getItem(AUTH_COOKIES_KEY);
@@ -49,12 +50,19 @@ function Leaflet() {
         localStorage.setItem(AUTH_COOKIES_KEY, JSON.stringify(authCookies));
     }, [authCookies]);
 
+    // execute filter
+    useEffect(() => {
+        if (Array.isArray(authCookies) && authCookies.length > 0 && map) {
+            setFilteredActivities(activities.filter(a => !blacklistedActivities.includes(a.id)).filter(a => a.distance > 50 && a.distance < 65 && a.id !== 1791420271));
+        }
+    }, [activities])
+
     // fetch polyline
     useEffect(() => {
         if (Array.isArray(authCookies) && authCookies.length > 0 && map) {
             // reset map content before re-rendering it again
             clearMap(map, setCompletedCount, setPolylineClicked);
-            for (const activity of activities.filter(a => !blacklistedActivities.includes(a.id)).filter(a => a.distance > 50 && a.distance < 65 && a.id !== 1791420271)) {
+            for (const activity of filteredActivities) {
                 const fromLocalStorage = localStorage.getItem(activity?.id?.toString());
                 if (fromLocalStorage) {
                     const polyline: LatLngExpression[] = polyUtil.decode(fromLocalStorage);
@@ -73,7 +81,7 @@ function Leaflet() {
                 }
             }
         }
-    }, [activities])
+    }, [filteredActivities])
 
     // fetch activities
     // TODO: custom useActivities-Hook
@@ -101,11 +109,11 @@ function Leaflet() {
         }
     }
 
-    const completed = Math.round((completedCount / activities.length) * 100);
+    const completed = Math.round((completedCount / filteredActivities.length) * 100);
     return (
         <>
             {(!Array.isArray(authCookies) || authCookies.length === 0) && <Login title={'Cycling Activities'} onLogin={handleLogin} primaryColor={BG_COLOR} />}
-            <p>{`${completedCount} / ${activities.length}`}</p>
+            <p>{`${completedCount} / ${filteredActivities.length}`}</p>
             <ProgressBar
                 completed={completed ? completed : 0}
                 borderRadius={'0px'}
