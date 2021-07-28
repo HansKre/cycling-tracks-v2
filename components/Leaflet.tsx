@@ -132,14 +132,22 @@ function Leaflet() {
             newMax = Math.max(newMax, a.distance);
         });
         setMinMaxDistance([newMin, newMax]);
-        setMinMaxDistanceVal([newMin, newMax]);
+        if (minMaxDistanceVal == [0, 0]) {
+            setMinMaxDistanceVal([newMin, newMax]);
+        }
     }, [activities]);
 
     const handleDistanceChange = (event: React.ChangeEvent<{}>, newValue: number | number[]) => {
         if (Array.isArray(newValue)) {
             setMinMaxDistanceVal(newValue);
+            localStorage.setItem('distance', JSON.stringify(newValue));
         }
     }
+
+    useEffect(() => {
+        const newValue = localStorage.getItem('distance');
+        if (newValue && newValue.length > 0) {setMinMaxDistanceVal(JSON.parse(newValue))}
+    }, [])
 
     // reset distance-filter
     useEffect(() => {
