@@ -182,12 +182,12 @@ function polylineToMap(
  */
 function clearMap(
     map: Map,
-    setCompletedCount: React.Dispatch<React.SetStateAction<number>>,
+    setCompletedCount: React.Dispatch<React.SetStateAction<number>>
 ) {
     map.eachLayer((layer: L.Layer) => {
-        if (layer.getAttribution && !layer.getAttribution()) {
-            map.removeLayer(layer);
-        } else {
+        const hasEmptyContrib = !(layer.getAttribution && layer.getAttribution());
+        const hasNoContrib = !layer.getAttribution;
+        if (hasEmptyContrib || hasNoContrib) {
             map.removeLayer(layer);
         }
     })
