@@ -10,7 +10,8 @@ import Login from './login/Login';
 import Cookie from '../pages/api/types/incoming/Cookie';
 import {postRequest} from './utils';
 import config from '../pages/api/config'
-import {Typography, Slider} from '@material-ui/core';
+import {Typography, Slider, Backdrop, CircularProgress} from '@material-ui/core';
+import {makeStyles} from '@material-ui/core/styles';
 
 const randomColor = () => {
     const randomColor = Math.floor(Math.random() * 16777215).toString(16);
@@ -26,6 +27,14 @@ const blacklistedActivities = [7019832827, 7008550301, 7019832827, 7022366656, 7
 
 const AUTH_COOKIES_KEY = 'authCookies';
 const BG_COLOR = '#696969';
+
+const useStyles = makeStyles((theme) => ({
+    backdrop: {
+        zIndex: theme.zIndex.drawer + 1,
+        color: '#fff',
+    },
+}));
+
 function Leaflet() {
     const [map, setMap] = useState<LeafletMap>();
     const [activities, setActivities] = useState<Activity[] | []>([]);
@@ -45,6 +54,7 @@ function Leaflet() {
     });
     const [minMaxDistance, setMinMaxDistance] = useState([0, 0]);
     const [minMaxDistanceVal, setMinMaxDistanceVal] = useState([0, 0]);
+    const [isLoading, setIsLoading] = useState(false);
 
     // update ref's value every time referenced value is updated
     useEffect(() => {
@@ -70,16 +80,24 @@ function Leaflet() {
     // fetch polyline
     useEffect(() => {
         if (Array.isArray(authCookies) && authCookies.length > 0 && map) {
+            setIsLoading(true);
+            const promises = [];
             // reset map content before re-rendering it again
             clearMap(map, setCompletedCount, setPolylineClicked);
             for (const activity of filteredActivities) {
                 const fromLocalStorage = localStorage.getItem(activity?.id?.toString());
                 if (fromLocalStorage) {
-                    const polyline: LatLngExpression[] = polyUtil.decode(fromLocalStorage);
-                    polylineToMap(polyline, activity, map, polylineClickedRef, setPolylineClicked);
-                    setCompletedCount(prev => prev + 1);
+                    const delayedPolyline = new Promise((resolve) => {
+                        setTimeout(() => {
+                            const polyline: LatLngExpression[] = polyUtil.decode(fromLocalStorage);
+                            polylineToMap(polyline, activity, map, polylineClickedRef, setPolylineClicked);
+                            setCompletedCount(prev => prev + 1);
+                            resolve(true);
+                        }, 150)
+                    });
+                    promises.push(delayedPolyline);
                 } else {
-                    postRequest(config.polylineApiUrl(activity.id), authCookies)
+                    const pendingRequest = postRequest(config.polylineApiUrl(activity.id), authCookies)
                         .then(data => data.json())
                         .then((json: ActivityPolyline) => {
                             if (json.hasOwnProperty('encodedPolyline')) {
@@ -93,27 +111,33 @@ function Leaflet() {
                             }
                         })
                         .catch(err => console.log(err, activity.id));
+                    promises.push(pendingRequest);
                 }
             }
+            Promise.all(promises)
+                .then((values) => setIsLoading(false))
+                .catch((reason) => setIsLoading(false))
         }
     }, [filteredActivities])
 
     // fetch activities
-    // TODO: custom useActivities-Hook
     useEffect(() => {
         if (Array.isArray(authCookies) && authCookies.length > 0) {
-            postRequest(config.activitiesApiUrl, authCookies)
+            setIsLoading(true);
+            const pendingRequest = postRequest(config.activitiesApiUrl, authCookies)
                 .then(data => data.json())
                 .then(({body}) => setActivities(body))
                 .catch(err => {
                     console.log(err);
                     resetAuthCookies();
                 })
+                .finally(() => setIsLoading(false));
         }
     }, [authCookies])
 
     const handleLogin = async (username: string, password: string): Promise<boolean> => {
         try {
+            setIsLoading(true);
             const response = await postRequest(config.loginApiUrl, {username, password});
             const newAuthCookies: Cookie[] = await response.json();
             setAuthCookies(newAuthCookies);
@@ -121,6 +145,8 @@ function Leaflet() {
         } catch (error) {
             console.log(`Something went wrong: ${error.message}`);
             return false;
+        } finally {
+            setIsLoading(false);
         }
     }
 
@@ -176,9 +202,20 @@ function Leaflet() {
         </>)
     }
 
+    const classes = useStyles();
+
+    const backDrop = () => {
+        return (
+            <Backdrop className={classes.backdrop} open={isLoading}>
+                <CircularProgress color="inherit" />
+            </Backdrop>
+        )
+    }
+
     const completed = Math.round((completedCount / filteredActivities.length) * 100);
     return (
         <>
+            {backDrop()}
             {distanceRangeSlider()}
             {authCookies.length > 0 && <button onClick={(e) => setAuthCookies([])} >Logout</button>}
             {(!Array.isArray(authCookies) || authCookies.length === 0) && <Login title={'Cycling Activities'} onLogin={handleLogin} primaryColor={BG_COLOR} />}
