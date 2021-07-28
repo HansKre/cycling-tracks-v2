@@ -40,11 +40,8 @@ function Leaflet() {
     });
     const [polylineClicked, setPolylineClicked] = useState(false);
     const polylineClickedRef = useRef(polylineClicked);
-    const [filters, setFilters] = useState(() => {
-        return new Map().set(
-            'preset-blacklist',
-            (a: Activity) => !blacklistedActivities.includes(a.id)
-        )
+    const [filters, setFilters] = useState({
+        'preset-blacklist': (a: Activity) => !blacklistedActivities.includes(a.id)
     });
     const [minMaxDistance, setMinMaxDistance] = useState([0, 0]);
     const [minMaxDistanceVal, setMinMaxDistanceVal] = useState([0, 0]);
@@ -64,12 +61,12 @@ function Leaflet() {
         console.log('Filtering', filters);
         if (Array.isArray(authCookies) && authCookies.length > 0 && map) {
             const filteredActivities = activities.filter(a => {
-                return Array.from(filters.values()).reduce((prev, filterFn) => prev && filterFn(a), true)
+                return Object.values(filters).reduce((prev, filterFn) => prev && filterFn(a), true)
             })
             setFilteredActivities(filteredActivities);
         }
         return () => setFilteredActivities([]);
-    }, [activities, filters, minMaxDistanceVal])
+    }, [activities, filters])
 
     // fetch polyline
     useEffect(() => {
@@ -144,10 +141,12 @@ function Leaflet() {
     useEffect(() => {
         // setFilters(prev => {prev.delete('distance'); return prev;});
         console.log('Updating filters', minMaxDistanceVal);
-        setFilters(prev => prev.set(
-            'distance',
-            (a: Activity) => a.distance > minMaxDistanceVal[0] && a.distance < minMaxDistanceVal[1])
-        );
+        setFilters(prev => (
+            {
+                ...prev,
+                'distance': (a: Activity) => a.distance > minMaxDistanceVal[0] && a.distance < minMaxDistanceVal[1]
+            }
+        ));
     }, [minMaxDistanceVal])
 
     const distanceRangeSlider = () => {
