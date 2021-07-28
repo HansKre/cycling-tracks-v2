@@ -45,6 +45,8 @@ function Leaflet() {
     // fetch polyline
     useEffect(() => {
         if (Array.isArray(authCookies) && authCookies.length > 0 && map) {
+            // reset map content before re-rendering it again
+            map && clearMap(map, setCompletedCount);
             for (const activity of activities.filter(a => !blacklistedActivities.includes(a.id)).filter(a => a.distance > 50 && a.distance < 65 && a.id !== 1791420271)) {
                 const fromLocalStorage = localStorage.getItem(activity?.id?.toString());
                 if (fromLocalStorage) {
@@ -115,10 +117,6 @@ function Leaflet() {
                     attribution='&copy; <a href="http://osm.org/copyright">OpenStreetMap</a> contributors'
                     url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
                 />
-                {/* {lines?.length > 0 && lines.map(line => {
-                const pathOptions = {color: randomColor(), weight: 5};
-                return polyLine(line, pathOptions)
-            })} */}
             </MapContainer>
         </>
     )
@@ -179,3 +177,19 @@ function polylineToMap(
     // });
 }
 
+/**
+ * Removes all polylines but keeps attributions.
+ */
+function clearMap(
+    map: Map,
+    setCompletedCount: React.Dispatch<React.SetStateAction<number>>,
+) {
+    map.eachLayer((layer: L.Layer) => {
+        if (layer.getAttribution && !layer.getAttribution()) {
+            map.removeLayer(layer);
+        } else {
+            map.removeLayer(layer);
+        }
+    })
+    setCompletedCount(0);
+}
