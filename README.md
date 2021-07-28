@@ -32,6 +32,11 @@ Comparing a cycling activity `7147476023` with ca. 37km length.
 
 ## Backlog
 
+### Filters
+
+- Search for places to show nearby routs
+- Polyline similarity compare
+
 ### Raspberry
 
 - [use pm2 // ADVANCED, PRODUCTION PROCESS MANAGER FOR NODE.JS](https://pm2.keymetrics.io)
