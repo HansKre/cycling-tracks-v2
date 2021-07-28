@@ -1,4 +1,4 @@
-import L, {LatLngExpression, Map, LatLngBounds, LeafletMouseEvent} from 'leaflet';
+import L, {LatLngExpression, Map as LeafletMap, LatLngBounds, LeafletMouseEvent} from 'leaflet';
 import React, {useState, useEffect, useRef} from 'react';
 import {MapContainer, TileLayer} from 'react-leaflet';
 import Activity from '../pages/api/types/outgoing/activity';
@@ -10,6 +10,7 @@ import Login from './login/Login';
 import Cookie from '../pages/api/types/incoming/Cookie';
 import {postRequest} from './utils';
 import config from '../pages/api/config'
+import {Typography, Slider} from '@material-ui/core';
 
 const randomColor = () => {
     const randomColor = Math.floor(Math.random() * 16777215).toString(16);
@@ -26,7 +27,7 @@ const blacklistedActivities = [7019832827, 7008550301, 7019832827, 7022366656, 7
 const AUTH_COOKIES_KEY = 'authCookies';
 const BG_COLOR = '#696969';
 function Leaflet() {
-    const [map, setMap] = useState<Map>();
+    const [map, setMap] = useState<LeafletMap>();
     const [activities, setActivities] = useState<Activity[] | []>([]);
     const [filteredActivities, setFilteredActivities] = useState<Activity[] | []>([]);
     const [completedCount, setCompletedCount] = useState<number>(0);
@@ -39,6 +40,14 @@ function Leaflet() {
     });
     const [polylineClicked, setPolylineClicked] = useState(false);
     const polylineClickedRef = useRef(polylineClicked);
+    const [filters, setFilters] = useState(() => {
+        return new Map().set(
+            'preset-blacklist',
+            (a: Activity) => !blacklistedActivities.includes(a.id)
+        )
+    });
+    const [minMaxDistance, setMinMaxDistance] = useState([0, 0]);
+    const [minMaxDistanceVal, setMinMaxDistanceVal] = useState([0, 0]);
 
     // update ref's value every time referenced value is updated
     useEffect(() => {
@@ -52,17 +61,15 @@ function Leaflet() {
 
     // execute filter
     useEffect(() => {
+        console.log('Filtering', filters);
         if (Array.isArray(authCookies) && authCookies.length > 0 && map) {
-            const filters = [
-                (a: Activity) => !blacklistedActivities.includes(a.id),
-                (a: Activity) => a.distance > 50 && a.distance < 65 && a.id !== 1791420271
-            ]
             const filteredActivities = activities.filter(a => {
-                return filters.reduce((prev, filterFn) => prev && filterFn(a), true)
+                return Array.from(filters.values()).reduce((prev, filterFn) => prev && filterFn(a), true)
             })
             setFilteredActivities(filteredActivities);
         }
-    }, [activities])
+        return () => setFilteredActivities([]);
+    }, [activities, filters, minMaxDistanceVal])
 
     // fetch polyline
     useEffect(() => {
@@ -116,9 +123,54 @@ function Leaflet() {
         }
     }
 
+    // set min-max Range for slider
+    useEffect(() => {
+        let newMin = 0, newMax = 0;
+        activities.forEach(a => {
+            newMin = Math.min(newMin, a.distance);
+            newMax = Math.max(newMax, a.distance);
+        });
+        setMinMaxDistance([newMin, newMax]);
+        setMinMaxDistanceVal([newMin, newMax]);
+    }, [activities]);
+
+    const handleDistanceChange = (event: React.ChangeEvent<{}>, newValue: number | number[]) => {
+        if (Array.isArray(newValue)) {
+            console.log('Updating', newValue);
+            setMinMaxDistanceVal(newValue);
+        }
+    }
+
+    useEffect(() => {
+        // setFilters(prev => {prev.delete('distance'); return prev;});
+        console.log('Updating filters', minMaxDistanceVal);
+        setFilters(prev => prev.set(
+            'distance',
+            (a: Activity) => a.distance > minMaxDistanceVal[0] && a.distance < minMaxDistanceVal[1])
+        );
+    }, [minMaxDistanceVal])
+
+    const distanceRangeSlider = () => {
+        return (<>
+            <Typography id="range-slider" gutterBottom>
+                Distance range
+            </Typography>
+            <Slider
+                value={minMaxDistanceVal}
+                onChange={handleDistanceChange}
+                valueLabelDisplay="auto"
+                aria-labelledby="range-slider"
+                getAriaValueText={(value) => `${value}m`}
+                min={minMaxDistance[0]}
+                max={minMaxDistance[1]}
+            />
+        </>)
+    }
+
     const completed = Math.round((completedCount / filteredActivities.length) * 100);
     return (
         <>
+            {distanceRangeSlider()}
             {authCookies.length > 0 && <button onClick={(e) => setAuthCookies([])} >Logout</button>}
             {(!Array.isArray(authCookies) || authCookies.length === 0) && <Login title={'Cycling Activities'} onLogin={handleLogin} primaryColor={BG_COLOR} />}
             <p>{`${completedCount} / ${filteredActivities.length}`}</p>
@@ -161,7 +213,7 @@ function polylineToMap(
     setCompletedCount: React.Dispatch<React.SetStateAction<number>>,
     polyline: LatLngExpression[],
     activity: Activity,
-    map: Map,
+    map: LeafletMap,
     polylineClickedRef: React.MutableRefObject<boolean>,
     setPolylineClicked: React.Dispatch<React.SetStateAction<boolean>>
 ) {
@@ -228,7 +280,7 @@ function polylineToMap(
  * Removes all polylines but keeps attributions.
  */
 function clearMap(
-    map: Map,
+    map: LeafletMap,
     setCompletedCount: React.Dispatch<React.SetStateAction<number>>,
     setPolylineClicked: React.Dispatch<React.SetStateAction<boolean>>
 ) {
