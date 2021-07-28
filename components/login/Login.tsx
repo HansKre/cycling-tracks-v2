@@ -26,15 +26,18 @@ function Login(props: Props) {
     const [username, setUsername] = useState('');
     const [password, setPassword] = useState('');
     const [loginError, setLoginError] = useState('');
+    const [isLoggingIn, setIsLoggingIn] = useState(false);
 
     async function handleSubmit(event: React.SyntheticEvent) {
         event.preventDefault();
         if (username.length > 0 && password.length > 0) {
+            setIsLoggingIn(true);
             setLoginError('');
             if (!(await onLogin(username, password))) {
+                setPassword('');
+                setIsLoggingIn(false);
                 setLoginError('Login failed');
             }
-            setPassword('');
         }
     }
 
@@ -120,8 +123,9 @@ function Login(props: Props) {
                                                     color="primary"
                                                     type="submit"
                                                     className={styles.buttonBlock}
+                                                    disabled={isLoggingIn}
                                                 >
-                                                    Login
+                                                    {isLoggingIn ? 'Logging in ...' : 'Login'}
                                                 </Button>
                                             </Grid>
                                         </Grid>
