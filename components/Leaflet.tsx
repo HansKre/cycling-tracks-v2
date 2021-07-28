@@ -53,7 +53,14 @@ function Leaflet() {
     // execute filter
     useEffect(() => {
         if (Array.isArray(authCookies) && authCookies.length > 0 && map) {
-            setFilteredActivities(activities.filter(a => !blacklistedActivities.includes(a.id)).filter(a => a.distance > 50 && a.distance < 65 && a.id !== 1791420271));
+            const filters = [
+                (a: Activity) => !blacklistedActivities.includes(a.id),
+                (a: Activity) => a.distance > 50 && a.distance < 65 && a.id !== 1791420271
+            ]
+            const filteredActivities = activities.filter(a => {
+                return filters.reduce((prev, filterFn) => prev && filterFn(a), true)
+            })
+            setFilteredActivities(filteredActivities);
         }
     }, [activities])
 
