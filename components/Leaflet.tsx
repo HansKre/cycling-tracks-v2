@@ -112,6 +112,7 @@ function Leaflet() {
     const completed = Math.round((completedCount / filteredActivities.length) * 100);
     return (
         <>
+            {authCookies.length > 0 && <button onClick={(e) => setAuthCookies([])} >Logout</button>}
             {(!Array.isArray(authCookies) || authCookies.length === 0) && <Login title={'Cycling Activities'} onLogin={handleLogin} primaryColor={BG_COLOR} />}
             <p>{`${completedCount} / ${filteredActivities.length}`}</p>
             <ProgressBar
