@@ -61,11 +61,6 @@ function Leaflet() {
         polylineClickedRef.current = polylineClicked
     }, [polylineClicked]);
 
-    // whenever authCookies change, store them to user's localStorage
-    useEffect(() => {
-        localStorage.setItem(AUTH_COOKIES_KEY, JSON.stringify(authCookies));
-    }, [authCookies]);
-
     // execute filter
     useEffect(() => {
         if (Array.isArray(authCookies) && authCookies.length > 0 && map) {
@@ -140,6 +135,7 @@ function Leaflet() {
             setIsLoading(true);
             const response = await postRequest(config.loginApiUrl, {username, password});
             const newAuthCookies: Cookie[] = await response.json();
+            localStorage.setItem(AUTH_COOKIES_KEY, JSON.stringify(newAuthCookies));
             setAuthCookies(newAuthCookies);
             return true;
         } catch (error) {
