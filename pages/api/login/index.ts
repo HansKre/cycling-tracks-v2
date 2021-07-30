@@ -5,7 +5,7 @@ import {NextApiRequest, NextApiResponse} from "next";
 
 const activitiesUrl = 'https://connect.garmin.com/modern/proxy/activitylist-service/activities/search/activities?limit=20&start=0&_=1626966818321';
 
-const login = async (username: string, password: string): Response => {
+const login = async (username: string, password: string): Promise<Response> => {
     // creates a CookieJar instance
     const cookieJar = new CookieJar('cookies.json');
 
