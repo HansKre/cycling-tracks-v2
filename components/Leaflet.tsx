@@ -91,7 +91,8 @@ function Leaflet() {
                         }, 150)
                     });
                     promises.push(delayedPolyline);
-                } else {
+                } else if (fromLocalStorage === null) {
+                    // localStorage.getItem returns null for unknown keys
                     const pendingRequest = postRequest(config.polylineApiUrl(activity.id), authCookies)
                         .then(data => data.json())
                         .then((json: ActivityPolyline) => {
@@ -107,6 +108,9 @@ function Leaflet() {
                         })
                         .catch(err => console.log(err, activity.id));
                     promises.push(pendingRequest);
+                } else {
+                    // localStorage.getItem returned an empty string, which is equivalent to an empty polyline
+                    setCompletedCount(prev => prev + 1);
                 }
             }
             Promise.all(promises)
