@@ -63,13 +63,10 @@ function Leaflet() {
 
     // execute filter
     useEffect(() => {
-        if (Array.isArray(authCookies) && authCookies.length > 0 && map) {
-            const filteredActivities = activities.filter(a => {
-                return Object.values(filters).reduce((prev, filterFn) => prev && filterFn(a), true)
-            })
-            setFilteredActivities(filteredActivities);
-        }
-        return () => setFilteredActivities([]);
+        const filteredActivities = activities.filter(a => {
+            return Object.values(filters).reduce((prev, filterFn) => prev && filterFn(a), true)
+        });
+        setFilteredActivities(filteredActivities);
     }, [activities, filters])
 
     // fetch polyline
@@ -158,7 +155,7 @@ function Leaflet() {
             newMax = Math.max(newMax, a.distance);
         });
         setMinMaxDistance([newMin, newMax]);
-        if (minMaxDistanceVal == [0, 0]) {
+        if (minMaxDistanceVal[0] === 0 && minMaxDistanceVal[1] === 0) {
             setMinMaxDistanceVal([newMin, newMax]);
         }
     }, [activities]);
@@ -170,12 +167,13 @@ function Leaflet() {
         }
     }
 
+    // initially restore user settings for distance-filter
     useEffect(() => {
         const newValue = localStorage.getItem('distance');
         if (newValue && newValue.length > 0) {setMinMaxDistanceVal(JSON.parse(newValue))}
     }, [])
 
-    // reset distance-filter
+    // update distance-filter
     useEffect(() => {
         setFilters(prev => (
             {
