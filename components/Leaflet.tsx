@@ -74,7 +74,7 @@ function Leaflet() {
 
     // fetch polyline
     useEffect(() => {
-        if (Array.isArray(authCookies) && authCookies.length > 0 && map) {
+        if (isLoggedIn && map) {
             setIsLoading(true);
             const promises = [];
             // reset map content before re-rendering it again
@@ -121,7 +121,7 @@ function Leaflet() {
 
     // fetch activities
     useEffect(() => {
-        if (Array.isArray(authCookies) && authCookies.length > 0) {
+        if (isLoggedIn) {
             setIsLoading(true);
             const pendingRequest = postRequest(config.activitiesApiUrl, authCookies)
                 .then(data => data.json())
@@ -218,7 +218,7 @@ function Leaflet() {
         <>
             {backDrop()}
             {isLoggedIn && distanceRangeSlider()}
-            {authCookies.length > 0 && <button onClick={(e) => setAuthCookies([])} >Logout</button>}
+            {isLoggedIn && <button onClick={resetAuthCookies} >Logout</button>}
             {!isLoggedIn && <Login title={'Cycling Activities'} onLogin={handleLogin} primaryColor={BG_COLOR} />}
             <p>{`${completedCount} / ${filteredActivities.length}`}</p>
             <ProgressBar
