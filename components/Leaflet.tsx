@@ -246,6 +246,7 @@ function Leaflet() {
     function resetAuthCookies() {
         localStorage.removeItem(AUTH_COOKIES_KEY);
         setAuthCookies([]);
+        map && clearMap(map, setCompletedCount, setPolylineClicked);
     }
 }
 
