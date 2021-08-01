@@ -27,6 +27,10 @@ app.use(bodyParser.json());
 // set custom process-title to allow stopping node-server during deployments
 require('process').title = config.garminLoginServerProcessTitle;
 
+const compression = require('compression');
+// compress all responses
+app.use(compression());
+
 app.post('/api/login', async function (req, res) {
     console.log("/api/login", req.method, req.body);
     await handleLogin(req, res);

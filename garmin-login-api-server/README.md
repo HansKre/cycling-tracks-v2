@@ -2,20 +2,7 @@
 
 ## Backlog
 
-- [Response-Compression](http://expressjs.com/en/resources/middleware/compression.html)
-
-  ```js
-  # npm install compression
-  var compression = require('compression')
-  var express = require('express')
-
-  var app = express()
-
-  // compress all responses
-  app.use(compression())
-
-  // add all routes
-  ```
+- Use [ADVANCED, PRODUCTION PROCESS MANAGER FOR NODE.JS](https://pm2.keymetrics.io)
 
 ## Deployment
 
@@ -31,8 +18,9 @@ There are two options to stop running `NodeJS` server.
 1. First one is more generic:
 
     ```bash
-    $ sudo netstat -tulpn | grep LISTEN | grep 3000
-    tcp6       0      0 :::3000                 :::*                    LISTEN      16886/node
+    $ sudo netstat -tulpn | grep LISTEN | grep 30
+    tcp6       0      0 :::3080                 :::*                    LISTEN      16886/node
+    tcp6       0      0 :::3043                 :::*                    LISTEN      16886/node
     $ kill 16886
     ```
 
