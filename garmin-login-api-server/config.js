@@ -14,7 +14,7 @@ const config = {
     polylineApiUrl: (id) => `/api/cycling/activities/polyline/${id}`,
     activitiesApiUrl: '/api/cycling/activities',
     // max process.title-length is limited to 13 chars
-    garminLoginServerProcessTitle: () => 'garminLoginServer'.substring(0, 13),
+    garminLoginServerProcessTitle: 'garminLoginSe',
 }
 
 module.exports = config;
