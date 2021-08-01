@@ -7,7 +7,7 @@ const express = require("express");
 const cors = require('cors');
 const app = express();
 const port = process.env.PORT || 3080;
-const portSsl = process.env.PORT_SSL || 3043;
+const portSsl = process.env.PORT_SSL || 30443;
 const config = require('./config');
 
 const sslConfig = require('./ssl-config');
