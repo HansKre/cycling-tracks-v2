@@ -5,7 +5,7 @@
     "main": "server.js",
     "scripts": {
         "start": "node -r esm server.js",
-        "stop": "pkill garminLoginServer"
+        "stop": "pkill garminLoginSe"
     },
     "dependencies": {
         "cors": "^2.8.5",
