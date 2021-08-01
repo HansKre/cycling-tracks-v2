@@ -1,10 +1,11 @@
 {
-    "name": "hello-node",
+    "name": "garmin-login-api-server",
     "version": "0.0.1",
-    "description": "A simple Node app built on fastify, instantly up and running.",
+    "description": "Self hosted server to forward user's login request to Garmin's backend.",
     "main": "server.js",
     "scripts": {
-        "start": "node -r esm server.js"
+        "start": "node -r esm server.js",
+        "stop": "pkill garminLoginServer"
     },
     "dependencies": {
         "cors": "^2.8.5",

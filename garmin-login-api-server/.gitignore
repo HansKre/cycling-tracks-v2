@@ -2,3 +2,9 @@
 npm-debug.log
 .DS_Store
 /*.env
+
+# challenge secrets
+.well-known/acme-challenge/rx*
+
+# https-certs
+/.certs

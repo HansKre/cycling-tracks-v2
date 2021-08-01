@@ -1,11 +1,8 @@
-import {fetch, CookieJar, Cookie} from "node-fetch-cookies";
-import Response from '../types/Response';
-import config from '../config.js'
-import {NextApiRequest, NextApiResponse} from "next";
+import { fetch, CookieJar } from "node-fetch-cookies";
+const config = require('./config');
 
-const activitiesUrl = 'https://connect.garmin.com/modern/proxy/activitylist-service/activities/search/activities?limit=20&start=0&_=1626966818321';
 
-const login = async (username: string, password: string): Promise<Response> => {
+export const login = async (username, password) => {
     // creates a CookieJar instance
     const cookieJar = new CookieJar('cookies.json');
 
@@ -55,10 +52,6 @@ const login = async (username: string, password: string): Promise<Response> => {
         "method": "GET",
         "mode": "cors",
     };
-    // load cookies from the cookie jar
-    // if (fs.existsSync('cookies.json')) {
-    //     await cookieJar.load();
-    // }
 
     // usual fetch usage, except with one or multiple cookie jars as first parameter
     const responseSignIn = await fetch(cookieJar, config.signInFormUrl, {
@@ -66,13 +59,11 @@ const login = async (username: string, password: string): Promise<Response> => {
     });
     console.log('SignIn:', responseSignIn.status);
     // console.log(cookieJar.cookies);
-
     const responseSignInService = await fetch(cookieJar, config.signInServiceUrl, {
         ...options,
     });
     console.log('SingInService:', responseSignInService.status);
-    console.log(cookieJar.cookies);
-
+    // console.log(cookieJar.cookies);
     const responseLogin = await fetch(cookieJar, config.loginUrl, {
         ...options,
         "method": "POST",
@@ -86,17 +77,16 @@ const login = async (username: string, password: string): Promise<Response> => {
         return {
             status: responseLogin.status,
             statusText: responseLogin.statusText
-        }
+        };
     }
 
     // \/\/connect.garmin.com\/modern\/?ticket=ST-02272549-YUw2BQOFTjpPwOILMWIN-cas";
     const from = loginBody.search('ticket=ST') + 7;
     const to = loginBody.search('cas";') + 3;
     const ticket = loginBody.substring(from, to);
-    console.log(ticket);
-
+    // console.log(ticket);
     if (ticket.startsWith('ST-') && ticket.endsWith('-cas')) {
-        console.log(config.ticketUrl(ticket));
+        // console.log(config.ticketUrl(ticket));
         const responseTicket = await fetch(cookieJar, config.ticketUrl(ticket), {
             ...optionsApi
         });
@@ -106,7 +96,7 @@ const login = async (username: string, password: string): Promise<Response> => {
             return {
                 status: responseTicket.status,
                 statusText: responseTicket.statusText
-            }
+            };
         }
 
         const debug = false;
@@ -140,39 +130,9 @@ const login = async (username: string, password: string): Promise<Response> => {
 
         // save the received cookies to disk
         // await cookieJar.save();
-        return {status: 200, statusText: 'Ok', body: cookieJar};
+        return { status: 200, statusText: 'Ok', body: cookieJar };
     } else {
         console.log('Error: no ticket');
-        return {status: 500, statusText: 'Error: no ticket'};
+        return { status: 500, statusText: 'Error: no ticket' };
     }
 };
-
-export default async function handler(req: NextApiRequest, res: NextApiResponse) {
-    console.log('/api/login', req.method, req.body);
-    if (req.method === 'POST') {
-        const {username, password} = req.body;
-        console.log('parsed:', username, password);
-        if (username && password) {
-            console.log(username, password);
-            let response = await login(username, password);
-            if (response.status === 200) {
-                if (response.body) {
-                    const cookieJar = response.body;
-                    const authCookies = [];
-                    for (const cookie of cookieJar.cookiesAll()) {
-                        authCookies.push(cookie);
-                    }
-                    res.status(200).json(JSON.stringify(authCookies));
-                } else {
-                    res.status(response.status).send(response.statusText);
-                }
-            } else {
-                res.status(response.status).send(response.statusText);
-            }
-        } else {
-            res.status(400).send('Bad Request: username or password missing.')
-        }
-    } else {
-        res.status(405).send('Method not allowed: only POST allowed.');
-    }
-}
