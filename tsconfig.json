@@ -22,7 +22,6 @@
     "next-env.d.ts",
     "**/*.ts",
     "**/*.tsx",
-    "components/doLogin.js"
   ],
   "exclude": [
     "node_modules"
