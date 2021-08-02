@@ -1,4 +1,4 @@
-import L, {LatLngExpression, Map as LeafletMap, LatLngBounds, LeafletMouseEvent} from 'leaflet';
+import {LatLngExpression, Map as LeafletMap} from 'leaflet';
 import React, {useState, useEffect, useRef} from 'react';
 import {MapContainer, TileLayer} from 'react-leaflet';
 import Activity from '../pages/api/types/outgoing/activity';
@@ -8,19 +8,14 @@ const polyUtil = require('polyline-encoded');
 import ProgressBar from "@ramonak/react-progress-bar";
 import Login from './login/Login';
 import Cookie from '../pages/api/types/incoming/Cookie';
-import {postRequest} from './utils';
+import postRequest from './utils/postRequest';
 import config from '../pages/api/config'
 import {Typography, Slider, Backdrop, CircularProgress} from '@material-ui/core';
 import {makeStyles} from '@material-ui/core/styles';
-
-const randomColor = () => {
-    const randomColor = Math.floor(Math.random() * 16777215).toString(16);
-    return '#' + randomColor;
-}
+import clearMap from './utils/clearMap';
+import polylineToMap from './utils/polylineToMap';
 
 const stuttgart = {lat: 48.783333, lng: 9.183333};
-
-let maxBounds: LatLngBounds;
 
 // cologne activities blacklisted to avoid to big map-maxBounds
 const blacklistedActivities = [7019832827, 7008550301, 7019832827, 7022366656, 7013851476];
@@ -249,92 +244,3 @@ function Leaflet() {
 }
 
 export default Leaflet;
-
-/**
- * Configures polyline with popup for mouse-events and adds it to the map.
-* @param polylineClickedRef needs to be a refernce to polylineClick due
-*   to Closure, otherwise the polylineClicked value will be memoized and not updated by setPolylineClicked.
- */
-function polylineToMap(
-    polyline: LatLngExpression[],
-    activity: Activity,
-    map: LeafletMap,
-    polylineClickedRef: React.MutableRefObject<boolean>,
-    setPolylineClicked: React.Dispatch<React.SetStateAction<boolean>>
-) {
-    // create polyline
-    const pathOptions = {color: randomColor(), weight: 5};
-    const leafletPolyline = L.polyline(polyline, {color: randomColor(), weight: 5}).addTo(map);
-    // re-center map
-    if (maxBounds) {
-        const bounds = leafletPolyline.getBounds();
-        maxBounds = L.latLngBounds(
-            L.latLng(Math.min(maxBounds.getSouthWest().lat, bounds.getSouthWest().lat),
-                Math.min(maxBounds.getSouthWest().lng, bounds.getSouthWest().lng)),
-            L.latLng(Math.max(maxBounds.getNorthEast().lat, bounds.getNorthEast().lat),
-                Math.max(maxBounds.getNorthEast().lng, bounds.getNorthEast().lng))
-        );
-    } else {
-        maxBounds = leafletPolyline.getBounds();
-    }
-    map.fitBounds(maxBounds);
-    // add on-hover
-    let popup;
-    leafletPolyline.on('mouseover', (e: LeafletMouseEvent) => {
-        if (!polylineClickedRef.current) {
-            addPopup(e);
-        }
-    });
-    leafletPolyline.on('click', (e: LeafletMouseEvent) => {
-        setPolylineClicked(true);
-        addPopup(e);
-    });
-    leafletPolyline.on('mouseout', e => {
-        if (!polylineClickedRef.current) {
-            leafletPolyline.setStyle({weight: 5});
-            map.closePopup();
-        }
-    });
-
-    function addPopup(e: LeafletMouseEvent) {
-        leafletPolyline.setStyle({weight: 9});
-        popup = L.popup();
-        popup
-            .setLatLng(e.latlng)
-            .setContent(`${activity.id},
-                            ${activity.startTime},
-                            ${activity.distance}km,
-                            ${activity.averageSpeed}km/h,
-                            ${activity.elevationGain}m,
-                            ${activity.calories}kcal,
-                            ${activity.duration}h`
-            )
-            .on('remove', () => {
-                // close on-click, when mouseout-event is not triggered
-                if (polylineClickedRef.current) {
-                    leafletPolyline.setStyle({weight: 5});
-                    setPolylineClicked(false);
-                }
-            })
-            .openOn(map);
-    }
-}
-
-/**
- * Removes all polylines but keeps attributions.
- */
-function clearMap(
-    map: LeafletMap,
-    setCompletedCount: React.Dispatch<React.SetStateAction<number>>,
-    setPolylineClicked: React.Dispatch<React.SetStateAction<boolean>>
-) {
-    map.eachLayer((layer: L.Layer) => {
-        const hasEmptyContrib = !(layer.getAttribution && layer.getAttribution());
-        const hasNoContrib = !layer.getAttribution;
-        if (hasEmptyContrib || hasNoContrib) {
-            map.removeLayer(layer);
-        }
-    })
-    setCompletedCount(0);
-    setPolylineClicked(false);
-}
