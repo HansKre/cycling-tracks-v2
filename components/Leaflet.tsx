@@ -10,7 +10,7 @@ import Login from './login/Login';
 import Cookie from '../pages/api/types/incoming/Cookie';
 import postRequest from './utils/postRequest';
 import config from '../pages/api/config'
-import {Typography, Slider, Backdrop, CircularProgress} from '@material-ui/core';
+import {Typography, Slider, Backdrop, CircularProgress, Grid} from '@material-ui/core';
 import {makeStyles} from '@material-ui/core/styles';
 import clearMap from './utils/clearMap';
 import polylineToMap from './utils/polylineToMap';
@@ -208,32 +208,54 @@ function Leaflet() {
     const completed = Math.round((completedCount / filteredActivities.length) * 100);
     const isLoggedIn = (Array.isArray(authCookies) && authCookies.length > 0);
     return (
-        <>
-            {backDrop()}
-            {isLoggedIn && distanceRangeSlider()}
-            {isLoggedIn && <button onClick={resetAuthCookies} >Logout</button>}
-            {!isLoggedIn && <Login title={'Cycling Activities'} onLogin={handleLogin} primaryColor={BG_COLOR} />}
-            <p>{`${completedCount} / ${filteredActivities.length}`}</p>
-            <ProgressBar
-                completed={completed ? completed : 0}
-                borderRadius={'0px'}
-                bgColor={BG_COLOR}
-            />
-            <MapContainer
-                className={styles.leaflet}
-                zoom={13}
-                scrollWheelZoom={true}
-                center={stuttgart}
-                whenCreated={setMap}
-                maxZoom={18}
-                zoomOffset={-1}
+        <Grid
+            container
+            direction="column"
+            justifyContent="center"
+            alignItems="center"
+            className={styles.mainGrid}
+        >
+            <Grid
+                item
+                container
+                className={styles.filtersGrid}
             >
-                <TileLayer
-                    attribution='&copy; <a href="http://osm.org/copyright">OpenStreetMap</a> contributors'
-                    url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-                />
-            </MapContainer>
-        </>
+                {backDrop()}
+                {isLoggedIn && distanceRangeSlider()}
+                {isLoggedIn && <button onClick={resetAuthCookies} >Logout</button>}
+                {/* {!isLoggedIn && <Login title={'Cycling Activities'} onLogin={handleLogin} primaryColor={BG_COLOR} />} */}
+                <Grid item xs={2}>
+                    <Typography>{`${completedCount} / ${filteredActivities.length}`}</Typography>
+                </Grid>
+                <Grid item xs={10}>
+                    <ProgressBar
+                        completed={completed ? completed : 0}
+                        borderRadius={'0px'}
+                        bgColor={BG_COLOR}
+                    />
+                </Grid>
+            </Grid>
+            <Grid
+                item
+                container
+                className={styles.mapGrid}
+            >
+                <MapContainer
+                    className={styles.leafletMap}
+                    zoom={13}
+                    scrollWheelZoom={true}
+                    center={stuttgart}
+                    whenCreated={setMap}
+                    maxZoom={18}
+                    zoomOffset={-1}
+                >
+                    <TileLayer
+                        attribution='&copy; <a href="http://osm.org/copyright">OpenStreetMap</a> contributors'
+                        url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+                    />
+                </MapContainer>
+            </Grid>
+        </Grid>
     )
 
     function resetAuthCookies() {

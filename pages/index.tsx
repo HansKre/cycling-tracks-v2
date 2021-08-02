@@ -3,6 +3,7 @@ import Head from 'next/head'
 import styles from '../styles/IndexPage.module.css'
 
 import dynamic from 'next/dynamic'
+import {Grid} from '@material-ui/core'
 
 const DynamicComponentWithNoSSR = dynamic(
     () => import('../components/Leaflet'),
@@ -26,8 +27,14 @@ function IndexPage() {
                 {/* material-ui Roboto-Font */}
                 <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,400,500,700&display=swap" />
             </Head>
-            <h1>Cycling Activities</h1>
-            <DynamicComponentWithNoSSR />
+            <Grid
+                container
+                direction="column"
+                className={styles.mainGrid}
+            >
+                <h1>Cycling Activities</h1>
+                <DynamicComponentWithNoSSR />
+            </Grid>
         </div>
     )
 }

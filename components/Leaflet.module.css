@@ -1,1 +1,17 @@
-.leaflet { height: 90vh; }
+.mainGrid {
+    flex-grow: 1; /* grow to fill 100% of available parent height */
+}
+
+.filtersGrid {
+    background-color: cadetblue;
+    margin-bottom: 10px;
+}
+
+.mapGrid {
+    background-color: brown;
+    flex-grow: 1; /*grid should fill 100% of available space */
+}
+
+.leafletMap {
+    flex-grow: 1; /*map should fill 100% of available space */
+}

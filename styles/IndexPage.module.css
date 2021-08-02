@@ -1,0 +1,9 @@
+.mainGrid {
+    --bodyMargins: 8px;
+    --mainHeight: calc(100vh - var(--bodyMargins) * 2);
+    min-height: var(--mainHeight);
+    height: var(--mainHeight);
+    max-height: var(--mainHeight);
+    padding: 0.5rem 0.5rem; /* top & bott + right & left padding of 8px */
+    background-color: grey;
+  }
