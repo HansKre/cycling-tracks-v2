@@ -1,10 +1,21 @@
 .mainGrid {
     flex-grow: 1; /* grow to fill 100% of available parent height */
+    background-color: darkgrey;
+}
+
+.controlsContainerGrid {
+    margin-top: 0.8rem;
+    margin-bottom: 0.8rem;
+}
+
+.controlsGrid {
+    padding-left: 0.5rem;
+    padding-right: 0.5rem;
 }
 
 .filtersGrid {
-    background-color: cadetblue;
-    margin-bottom: 10px;
+    padding-left: 0.5rem;
+    padding-right: 0.5rem;
 }
 
 .mapGrid {
@@ -14,4 +25,8 @@
 
 .leafletMap {
     flex-grow: 1; /*map should fill 100% of available space */
+}
+
+.logoutBtn {
+    width: 100%;
 }

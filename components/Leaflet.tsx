@@ -6,11 +6,10 @@ import ActivityPolyline from '../pages/api/types/outgoing/polyline';
 import styles from './Leaflet.module.css';
 const polyUtil = require('polyline-encoded');
 import ProgressBar from "@ramonak/react-progress-bar";
-import Login from './login/Login';
 import Cookie from '../pages/api/types/incoming/Cookie';
 import postRequest from './utils/postRequest';
 import config from '../pages/api/config'
-import {Typography, Slider, Backdrop, CircularProgress, Grid} from '@material-ui/core';
+import {Typography, Slider, Grid} from '@material-ui/core';
 import {makeStyles} from '@material-ui/core/styles';
 import clearMap from './utils/clearMap';
 import polylineToMap from './utils/polylineToMap';
@@ -20,28 +19,18 @@ const stuttgart = {lat: 48.783333, lng: 9.183333};
 // cologne activities blacklisted to avoid to big map-maxBounds
 const blacklistedActivities = [7019832827, 7008550301, 7019832827, 7022366656, 7013851476];
 
-const AUTH_COOKIES_KEY = 'authCookies';
-const BG_COLOR = '#696969';
+type Props = {
+    authCookies: Cookie[];
+    onLogout: () => void;
+    whileLoggingIn: (value: React.SetStateAction<boolean>) => void
+}
 
-const useStyles = makeStyles((theme) => ({
-    backdrop: {
-        zIndex: theme.zIndex.drawer + 1,
-        color: '#fff',
-    },
-}));
-
-function Leaflet() {
+function Leaflet(props: Props) {
+    const {authCookies, onLogout, whileLoggingIn} = props;
     const [map, setMap] = useState<LeafletMap>();
     const [activities, setActivities] = useState<Activity[] | []>([]);
     const [filteredActivities, setFilteredActivities] = useState<Activity[] | []>([]);
     const [completedCount, setCompletedCount] = useState<number>(0);
-    const [authCookies, setAuthCookies] = useState<Cookie[]>(() => {
-        const fromLocalStorage = localStorage.getItem(AUTH_COOKIES_KEY);
-        if (fromLocalStorage) {
-            return JSON.parse(fromLocalStorage);
-        }
-        return [];
-    });
     const [polylineClicked, setPolylineClicked] = useState(false);
     const polylineClickedRef = useRef(polylineClicked);
     const [filters, setFilters] = useState({
@@ -49,7 +38,6 @@ function Leaflet() {
     });
     const [minMaxDistance, setMinMaxDistance] = useState([0, 0]);
     const [minMaxDistanceVal, setMinMaxDistanceVal] = useState([0, 0]);
-    const [isLoading, setIsLoading] = useState(false);
 
     // update ref's value every time referenced value is updated
     useEffect(() => {
@@ -66,8 +54,8 @@ function Leaflet() {
 
     // fetch polyline
     useEffect(() => {
-        if (isLoggedIn && map) {
-            setIsLoading(true);
+        if (map) {
+            whileLoggingIn(true);
             const promises = [];
             // reset map content before re-rendering it again
             clearMap(map, setCompletedCount, setPolylineClicked);
@@ -106,41 +94,24 @@ function Leaflet() {
                 }
             }
             Promise.all(promises)
-                .then((values) => setIsLoading(false))
-                .catch((reason) => setIsLoading(false))
+                .then((values) => whileLoggingIn(false))
+                .catch((reason) => whileLoggingIn(false))
         }
     }, [filteredActivities])
 
     // fetch activities
     useEffect(() => {
-        if (isLoggedIn) {
-            setIsLoading(true);
-            const pendingRequest = postRequest(config.activitiesApiUrl, authCookies)
-                .then(data => data.json())
-                .then(({body}) => setActivities(body))
-                .catch(err => {
-                    console.log(err);
-                    resetAuthCookies();
-                })
-                .finally(() => setIsLoading(false));
-        }
+        whileLoggingIn(true);
+        const pendingRequest = postRequest(config.activitiesApiUrl, authCookies)
+            .then(data => data.json())
+            .then(({body}) => setActivities(body))
+            .catch(err => {
+                console.log(err);
+                map && clearMap(map, setCompletedCount, setPolylineClicked);
+                onLogout();
+            })
+            .finally(() => whileLoggingIn(false));
     }, [authCookies])
-
-    const handleLogin = async (username: string, password: string): Promise<boolean> => {
-        try {
-            setIsLoading(true);
-            const response = await postRequest(config.loginApiUrl, {username, password});
-            const newAuthCookies: Cookie[] = await response.json();
-            localStorage.setItem(AUTH_COOKIES_KEY, JSON.stringify(newAuthCookies));
-            setAuthCookies(newAuthCookies);
-            return true;
-        } catch (error) {
-            console.log(`Something went wrong: ${error.message}`);
-            return false;
-        } finally {
-            setIsLoading(false);
-        }
-    }
 
     // set min-max Range for slider
     useEffect(() => {
@@ -179,34 +150,29 @@ function Leaflet() {
     }, [minMaxDistanceVal])
 
     const distanceRangeSlider = () => {
-        return (<>
-            <Typography id="range-slider" gutterBottom>
-                Distance range
-            </Typography>
-            <Slider
-                value={minMaxDistanceVal}
-                onChange={handleDistanceChange}
-                valueLabelDisplay="auto"
-                aria-labelledby="range-slider"
-                getAriaValueText={(value) => `${value}m`}
-                min={minMaxDistance[0]}
-                max={minMaxDistance[1]}
-            />
-        </>)
-    }
-
-    const classes = useStyles();
-
-    const backDrop = () => {
         return (
-            <Backdrop className={classes.backdrop} open={isLoading}>
-                <CircularProgress color="inherit" />
-            </Backdrop>
+            <>
+                <Grid item xs={2}>
+                    <Typography id="range-slider" gutterBottom>
+                        Distance range
+                    </Typography>
+                </Grid>
+                <Grid item xs={10}>
+                    <Slider
+                        value={minMaxDistanceVal}
+                        onChange={handleDistanceChange}
+                        valueLabelDisplay="auto"
+                        aria-labelledby="range-slider"
+                        getAriaValueText={(value) => `${value}m`}
+                        min={minMaxDistance[0]}
+                        max={minMaxDistance[1]}
+                    />
+                </Grid>
+            </>
         )
     }
 
     const completed = Math.round((completedCount / filteredActivities.length) * 100);
-    const isLoggedIn = (Array.isArray(authCookies) && authCookies.length > 0);
     return (
         <Grid
             container
@@ -216,23 +182,28 @@ function Leaflet() {
             className={styles.mainGrid}
         >
             <Grid
-                item
                 container
-                className={styles.filtersGrid}
+                className={styles.controlsContainerGrid}
             >
-                {backDrop()}
-                {isLoggedIn && distanceRangeSlider()}
-                {isLoggedIn && <button onClick={resetAuthCookies} >Logout</button>}
-                {/* {!isLoggedIn && <Login title={'Cycling Activities'} onLogin={handleLogin} primaryColor={BG_COLOR} />} */}
-                <Grid item xs={2}>
-                    <Typography>{`${completedCount} / ${filteredActivities.length}`}</Typography>
+                <Grid
+                    container
+                    className={styles.filtersGrid}
+                >
+                    {distanceRangeSlider()}
                 </Grid>
-                <Grid item xs={10}>
-                    <ProgressBar
-                        completed={completed ? completed : 0}
-                        borderRadius={'0px'}
-                        bgColor={BG_COLOR}
-                    />
+                <Grid
+                    container
+                    className={styles.controlsGrid}>
+                    <Grid item xs={2}>
+                        <Typography>{`${completedCount} / ${filteredActivities.length}`}</Typography>
+                    </Grid>
+                    <Grid item xs={10}>
+                        <ProgressBar
+                            completed={completed ? completed : 0}
+                            borderRadius={'0px'}
+                            bgColor={config.BG_COLOR}
+                        />
+                    </Grid>
                 </Grid>
             </Grid>
             <Grid
@@ -257,12 +228,6 @@ function Leaflet() {
             </Grid>
         </Grid>
     )
-
-    function resetAuthCookies() {
-        localStorage.removeItem(AUTH_COOKIES_KEY);
-        setAuthCookies([]);
-        map && clearMap(map, setCompletedCount, setPolylineClicked);
-    }
 }
 
 export default Leaflet;

@@ -13,8 +13,11 @@ const config = {
     // loginApiUrl: 'http://localhost:3000/api/login',
     polylineApiUrl: (id) => `/api/cycling/activities/polyline/${id}`,
     activitiesApiUrl: '/api/cycling/activities',
+    // activitiesApiUrl: '/api/dummy',
     // max process.title-length is limited to 13 chars
     garminLoginServerProcessTitle: 'garminLoginSe',
+    BG_COLOR: '#696969',
+    AUTH_COOKIES_KEY: 'authCookies'
 }
 
 module.exports = config;

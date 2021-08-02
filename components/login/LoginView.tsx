@@ -11,7 +11,7 @@ import {
 } from "@material-ui/core";
 import {createTheme, ThemeProvider} from '@material-ui/core/styles';
 import purple from '@material-ui/core/colors/purple';
-import styles from './Login.module.css'
+import styles from './LoginView.module.css'
 
 type Props = {
     title: string;
@@ -21,7 +21,7 @@ type Props = {
     errorColor?: string;
 }
 
-function Login(props: Props) {
+export default function LoginView(props: Props) {
     const {title, onLogin, onForgotPasswordClicked, primaryColor, errorColor} = props;
     const [username, setUsername] = useState('');
     const [password, setPassword] = useState('');
@@ -149,4 +149,3 @@ function Login(props: Props) {
         </div>
     );
 }
-export default Login;
