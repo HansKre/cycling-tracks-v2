@@ -26,7 +26,3 @@
 .leafletMap {
     flex-grow: 1; /*map should fill 100% of available space */
 }
-
-.logoutBtn {
-    width: 100%;
-}

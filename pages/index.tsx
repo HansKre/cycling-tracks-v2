@@ -62,10 +62,10 @@ function IndexPage() {
                 className={styles.mainGrid}
             >
                 <Grid container>
-                    <Grid item xs={11}>
+                    <Grid item xs={10}>
                         <h1>Cycling Activities</h1>
                     </Grid>
-                    <Grid item xs={1}>
+                    <Grid item xs={2}>
                         <button
                             onClick={handleLogout}
                             className={styles.logoutBtn}

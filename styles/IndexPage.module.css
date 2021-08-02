@@ -6,4 +6,10 @@
     max-height: var(--mainHeight);
     padding: 0.5rem 0.5rem; /* top & bott + right & left padding of 8px */
     background-color: grey;
-  }
+}
+
+.logoutBtn {
+    display: flex;
+    justify-content: flex-end;
+    align-items: flex-start;
+}
