@@ -155,7 +155,7 @@ function Leaflet(props: Props) {
                         Distance range
                     </Typography>
                 </Grid>
-                <Grid item xs={8} md={10}>
+                <Grid item xs={8} md={10} className={styles.sliderGrid}>
                     <Slider
                         value={minMaxDistanceVal}
                         onChange={handleDistanceChange}
