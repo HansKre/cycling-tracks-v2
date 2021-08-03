@@ -1,6 +1,6 @@
 .mainGrid {
     --bodyMargins: 8px;
-    --mainHeight: calc(100vh - var(--bodyMargins) * 2);
+    --mainHeight: calc(var(--vh, 1vh) * 100 - var(--bodyMargins) * 2);    
     min-height: var(--mainHeight);
     height: var(--mainHeight);
     max-height: var(--mainHeight);

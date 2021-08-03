@@ -1,6 +1,6 @@
 .loginForm {
     justify-content: center;
-    min-height: 90vh;
+    min-height: calc(var(--vh, 1vh) * 90);
 }
 
 .buttonBlock {
