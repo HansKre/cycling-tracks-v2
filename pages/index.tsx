@@ -6,6 +6,7 @@ import {Grid} from '@material-ui/core'
 import Cookie from './api/types/incoming/Cookie';
 import config from './api/config'
 import CustomBackdrop from '../components/backgrop/CustomBackdrop'
+import SetVhResponsivelyWithoutSSR from '../components/utils/setVhResponsively/SetVhResponsivelyWithoutSSR'
 
 const LoginWithoutSSR = dynamic(
     () => import('../components/login/LoginController'),
@@ -50,6 +51,7 @@ function IndexPage() {
                 {/* material-ui Roboto-Font */}
                 <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,400,500,700&display=swap" />
             </Head>
+            <SetVhResponsivelyWithoutSSR />
             <CustomBackdrop isLoading={isLoading} />
             {!isLoggedIn &&
                 <LoginWithoutSSR
