@@ -9,7 +9,6 @@
   },
   "dependencies": {
     "@material-ui/core": "^4.12.2",
-    "@ramonak/react-progress-bar": "^3.2.1",
     "leaflet": "^1.7.1",
     "next": "11.0.1",
     "node-fetch": "^2.6.1",

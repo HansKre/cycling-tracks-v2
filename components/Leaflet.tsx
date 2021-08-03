@@ -5,12 +5,10 @@ import Activity from '../pages/api/types/outgoing/activity';
 import ActivityPolyline from '../pages/api/types/outgoing/polyline';
 import styles from './Leaflet.module.css';
 const polyUtil = require('polyline-encoded');
-import ProgressBar from "@ramonak/react-progress-bar";
 import Cookie from '../pages/api/types/incoming/Cookie';
 import postRequest from './utils/postRequest';
 import config from '../pages/api/config'
-import {Typography, Slider, Grid} from '@material-ui/core';
-import {makeStyles} from '@material-ui/core/styles';
+import {Typography, Slider, Grid, LinearProgress} from '@material-ui/core';
 import clearMap from './utils/clearMap';
 import polylineToMap from './utils/polylineToMap';
 
@@ -152,12 +150,12 @@ function Leaflet(props: Props) {
     const distanceRangeSlider = () => {
         return (
             <>
-                <Grid item xs={2}>
+                <Grid item xs={4} md={2}>
                     <Typography id="range-slider" gutterBottom>
                         Distance range
                     </Typography>
                 </Grid>
-                <Grid item xs={10}>
+                <Grid item xs={8} md={10}>
                     <Slider
                         value={minMaxDistanceVal}
                         onChange={handleDistanceChange}
@@ -194,15 +192,11 @@ function Leaflet(props: Props) {
                 <Grid
                     container
                     className={styles.controlsGrid}>
-                    <Grid item xs={2}>
+                    <Grid item xs={4} md={2}>
                         <Typography>{`${completedCount} / ${filteredActivities.length}`}</Typography>
                     </Grid>
-                    <Grid item xs={10}>
-                        <ProgressBar
-                            completed={completed ? completed : 0}
-                            borderRadius={'0px'}
-                            bgColor={config.BG_COLOR}
-                        />
+                    <Grid item xs={8} md={10}>
+                        <LinearProgress variant="determinate" value={completed ? completed : 0} />
                     </Grid>
                 </Grid>
             </Grid>
